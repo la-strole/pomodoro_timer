@@ -13,6 +13,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const garden_tree_width = Math.floor(tree.clientWidth / 2);
     const garden_tree_height = Math.floor(tree.clientHeight / 2);
 
+    function play_sound(){
+        let audio = new Audio('static/bell.wav');
+        audio.play();
+        console.log('play sound');
+    }
+
     function add_tree(){
         // Get current tree image
         const current_tree_src = tree.src;
@@ -63,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 let d = new Date();
                 time_end = `${d.getHours()}:${d.getMinutes()}`;
                 add_tree();
+                play_sound();
                 tear_down();
                 console.log("stop by timer");
             } else {
@@ -99,6 +106,7 @@ document.addEventListener("DOMContentLoaded", function() {
             let d = new Date();
             time_end = `${d.getHours()}:${d.getMinutes()}`;
             add_tree();
+            play_sound();
             tear_down();
             console.log("stop by button");
 
