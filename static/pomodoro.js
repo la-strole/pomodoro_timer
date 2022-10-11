@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function tear_down(){
-        document.title = "Pomodoro timer 25:00";
+        document.title = "Pomo 25:00";
         tree.src = 'static/tree/1.jpg';
         time_start = '';
         time_end = '';
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else {
                     t_second.innerHTML = `${second}`;
                 }
-                document.title = `Pomodoro timer ${t_minute.innerHTML}${t_second.innerHTML}`;
+                document.title = `${t_minute.innerHTML}${t_second.innerHTML}`;
             }
         }
     }, 1000);
