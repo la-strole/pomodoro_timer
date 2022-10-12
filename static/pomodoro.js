@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const stop_button = document.querySelector('#btn_stop');
 
     function play_sound(){
-        let audio = new Audio('/static/bell.wav');
+        let audio = new Audio('static/bell.wav');
         audio.play();
         console.log('play sound');
     }
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function tear_down(){
         document.title = "Pomodoro 25:00";
-        tree.src = '/static/tree/1.jpg';
+        tree.src = 'static/tree/1.jpg';
         time_start = '';
         time_end = '';
         minute = 25;
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (second === 0) {
                     minute--;
                     second = 60;
-                    tree.src = `/static/tree/${26-minute}.jpg`;
+                    tree.src = `static/tree/${26-minute}.jpg`;
                 }
                 second--;
                 t_minute.innerHTML = ("0" + minute + ":").slice(-3);
