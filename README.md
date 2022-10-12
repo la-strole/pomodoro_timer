@@ -6,7 +6,7 @@ Simple, lightweight pomodoro timer (<https://en.wikipedia.org/wiki/Pomodoro_Tech
 <https://parhom.tech/pomodoro/>
 
 ## Demo
-![demo image]()
+![demo image](https://github.com/la-strole/pomodoro_timer/blob/main/image.png)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
