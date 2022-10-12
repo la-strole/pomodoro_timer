@@ -6,18 +6,15 @@ document.addEventListener("DOMContentLoaded", function() {
     let second = 0;
     let time_start = '';
     let time_end = '';
-    let timer_active = !is_paused_flag && !is_stop_flag;
-
-    const t_minute = document.getElementById("minute");
-    const t_second = document.getElementById("second");
+    
+    const t_minute = document.querySelector("#minute");
+    const t_second = document.querySelector("#second");
     const tree = document.querySelector("#current_tree");
     const pause_button = document.querySelector("#btn_pause");
     const stop_button = document.querySelector('#btn_stop');
-    const garden_tree_width = Math.floor(tree.clientWidth / 2);
-    const garden_tree_height = Math.floor(tree.clientHeight / 2);
 
     function play_sound(){
-        let audio = new Audio('static/bell.wav');
+        let audio = new Audio('/static/bell.wav');
         audio.play();
         console.log('play sound');
     }
@@ -26,6 +23,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Get current tree image
         const current_tree_src = tree.src;
+        const garden_tree_width = Math.floor(tree.clientWidth / 2);
+        const garden_tree_height = Math.floor(tree.clientHeight / 2);
         const current_date = new Date();
 
         // Add new tree to the garden
@@ -51,8 +50,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function tear_down(){
-        document.title = "Pomo 25:00";
-        tree.src = 'static/tree/1.jpg';
+        document.title = "Pomodoro 25:00";
+        tree.src = '/static/tree/1.jpg';
         time_start = '';
         time_end = '';
         minute = 25;
@@ -65,40 +64,32 @@ document.addEventListener("DOMContentLoaded", function() {
         pause_button.innerHTML = "Pause";
         pause_button.disabled = true;
         is_paused_flag = false;
-        timer_active = false;
-        console.log('Stop');
+        is_stop_flag = true;
+        console.log('Tear down');
     }
     
     setInterval(function() {
-        timer_active = !is_paused_flag && !is_stop_flag;
+        let timer_active = !is_paused_flag && !is_stop_flag;
         if (timer_active) {
 
             // If timer stop by time end or by stop button
             if ((minute === 0 && second === 0) || is_stop_flag) {
                 is_stop_flag = true;
                 let d = new Date();
-                time_end = `${d.getHours()}:${d.getMinutes()}`;
+                time_end = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
                 add_tree();
                 play_sound();
                 tear_down();
-                console.log("stop by timer");
+                console.log("Stop by timer");
             } else {
                 if (second === 0) {
                     minute--;
                     second = 60;
-                    tree.src = `static/tree/${26-minute}.jpg`;    
+                    tree.src = `/static/tree/${26-minute}.jpg`;
                 }
                 second--;
-                if (minute < 10) {
-                    t_minute.innerHTML = `0${minute}:`
-                } else {
-                    t_minute.innerHTML = `${minute}:`
-                }
-                if (second < 10) {
-                    t_second.innerHTML = `0${second}`;
-                } else {
-                    t_second.innerHTML = `${second}`;
-                }
+                t_minute.innerHTML = ("0" + minute + ":").slice(-3);
+                t_second.innerHTML = ("0" + second).slice(-2);
                 document.title = `${t_minute.innerHTML}${t_second.innerHTML}`;
             }
         }
@@ -109,18 +100,18 @@ document.addEventListener("DOMContentLoaded", function() {
             pause_button.disabled = false;
             is_stop_flag = false;
             let d = new Date();
-            time_start = `${d.getHours()}:${d.getMinutes()}`;
+            time_start = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
             this.value = "stop";
             this.innerHTML = "Stop";
         } else {
             is_stop_flag = true;
             pause_button.disabled = true;
             let d = new Date();
-            time_end = `${d.getHours()}:${d.getMinutes()}`;
+            time_end = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
             add_tree();
             play_sound();
             tear_down();
-            console.log("stop by button");
+            console.log("Stop by button");
         }   
     })
 
@@ -137,4 +128,3 @@ document.addEventListener("DOMContentLoaded", function() {
     })
 
 });
-
