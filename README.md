@@ -2,8 +2,8 @@
 
 Simple, lightweight pomodoro timer (<https://en.wikipedia.org/wiki/Pomodoro_Technique>).<br> No authentication, no logs. <br> Watch your tree grow in 25 minutes.
 
-## Website
-<https://parhom.tech/pomodoro/>
+## Docker
+1. `docker pull eugeneparkhom/pomodoro` - Listen at 80 hhtp port.
 
 ## Demo
 ![demo image](https://github.com/la-strole/pomodoro_timer/blob/main/image.png)
