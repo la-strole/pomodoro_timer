@@ -31,6 +31,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const current_date = new Date();
 
         // Add new tree to the garden
+        let d = new Date();
+        time_end = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
         let garden_tree = document.createElement("div");
         garden_tree.setAttribute("class", "col d-flex justify-content-center text-center");
         garden_tree.innerHTML = `
@@ -75,15 +77,15 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     function go_to_break(){
+
         minute = 5;
         second = 0;
-        t_minute.innerHTML = "5:";
+        if (pomo_in_row > 0 && pomo_in_row % 4 === 0) {
+            minute = 30;
+        }
+        
+        t_minute.innerHTML = `${("0" + minute).slice(-2)}:`;
         t_second.innerHTML = "00";
-        pause_button.value = "pause";
-        pause_button.innerHTML = "Pause";
-        pause_button.disabled = false;
-        is_paused_flag = false;
-        is_stop_flag = false;
         tree.src = `static/break.jpg`;
         console.log('Go to break');
     }
@@ -134,13 +136,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (pomodoro_session) {
                     if (!breaking_time){
                         play_sound();
-                        let d = new Date();
-                        time_end = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
                         add_tree();
                         pomo_in_row++;
                         document.getElementById("row_pomo_number").innerHTML = `${pomo_in_row}  pomodoro in a row`;
-                        go_to_break();
                         breaking_time = true;
+                        go_to_break();
+                        
                     }
                     else {
                         breaking_time = false;
@@ -151,12 +152,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
                 else {
                     is_stop_flag = true;
-                    let d = new Date();
-                    time_end = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
+                    console.log("Stop by timer");
                     add_tree();
                     play_sound();
                     tear_down_pomo();
-                    console.log("Stop by timer");
+                    
                 }
             }
             // Timer active
@@ -178,22 +178,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.querySelector('#btn_stop').addEventListener("click", function(){
         if (this.value === "start") {
-            pause_button.disabled = false;
-            is_stop_flag = false;
-            let d = new Date();
-            time_start = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
             this.value = "stop";
             this.innerHTML = "Stop";
             pomo_in_row = 0;
             if (pomodoro_session) {
                 document.getElementById("row_pomo_number").innerHTML = `${pomo_in_row} pomodoro in a row`;
             }
+            pomo_autostart();
             console.log("Started by button");
         } else {
             is_stop_flag = true;
             pause_button.disabled = true;
-            let d = new Date();
-            time_end = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
             if (! breaking_time){
                 add_tree();
             }
