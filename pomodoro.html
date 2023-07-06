@@ -34,10 +34,15 @@
                             <span id="minute">25:</span>
                             <span id="second">00</span>
                         </div>
-                        <div class="row justify-content-center">
+                        <div class="row justify-content-center" id="control_div">
                     
                             <button value="start" id="btn_stop" type="button" class="col-4 btn btn-outline-primary btn-lg m-4">Start</button>
                             <button value="pause" id="btn_pause" type="button" disabled="" class="col-4 btn btn-outline-primary btn-lg m-4">Pause</button>
+                            <div class="d-flex align-items-center form-switch form-switch-lg justify-content-center">
+                                <input class="form-check-input me-4" type="checkbox" role="switch" id="breaks" checked>
+                                <label class="form-check-label display-6 text-center" for="breaks">5 minute breaks</label>
+                            </div>
+
                         </div>
                     </div>
                     <div class="col-sm-4">
