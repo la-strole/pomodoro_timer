@@ -76,6 +76,7 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     function pomo_time() {
+        display_elements.tree_tag.classList.remove("mx-auto", "my-auto", "d-block", "w-75");
         display_elements.tree_tag.src = 'static/tree/1.jpg';
         // Initialize pomo timer
         states.timer_minute = settings.pomo_minute;
@@ -87,7 +88,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function break_time() {
         let is_long_break = (states.pomo_in_row % settings.lbr_after === 0 && states.pomo_in_row > 0) ? true : false;
-        display_elements.tree_tag.src = `static/break.jpg`;
+        display_elements.tree_tag.src = `static/break.gif`;
+        display_elements.tree_tag.classList.add("mx-auto", "my-auto", "d-block", "w-75");
         // Initialize break timer
         states.timer_minute = is_long_break ? settings.lbreak_m : settings.break_m;
         states.timer_second = 0;
@@ -197,13 +199,18 @@ document.addEventListener("DOMContentLoaded", function() {
             this.value = "stop";
             this.innerHTML = "Stop";
             states.pomo_in_row = 0;
+            // Upgrade display tag
+            display_elements.pomo_in_row_count_tag.innerHTML = `${states.pomo_in_row}  pomodoro in a row`;
             // Enable pause button
             display_elements.pause_button_tag.value = "pause";
             display_elements.pause_button_tag.innerHTML = "Pause";
             display_elements.pause_button_tag.disabled = false;
             // Begin timer
             controlls.is_stop_flag = false;
+            controlls.is_paused_flag = false;
             states.time_start = get_current_time();
+            states.breaking_time = false;
+            
             console.log("Started by button");
         } else {
             // Stop timer
