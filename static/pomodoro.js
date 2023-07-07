@@ -1,25 +1,40 @@
 document.addEventListener("DOMContentLoaded", function() {
-
-    let is_paused_flag = false;
-    let is_stop_flag = true;
-    let minute = 25;
-    let second = 0;
+    
+    let pomo_minute = 25
+    let pomo_second = 0;
+    let break_m = 5;
+    let break_s = 0;
+    let lbreak_m = 30;
+    let lbreak_s = 0;
+    let lbr_after = 4;
+    let pomodoro_session = true;
+    
     let time_start = '';
     let time_end = '';
     let breaking_time = false;
-    let pomodoro_session = true;
     let pomo_in_row = 0;
+    let is_paused_flag = false;
+    let is_stop_flag = true;
+    let minute = pomo_minute;
+    let second = pomo_second;
     
     const t_minute = document.querySelector("#minute");
     const t_second = document.querySelector("#second");
     const tree = document.querySelector("#current_tree");
     const pause_button = document.querySelector("#btn_pause");
     const stop_button = document.querySelector('#btn_stop');
+    // Create bootstrap offcanvas instance
+    const myOffcanvas = document.querySelector('#myOffcanvas');
+    const offcanvas = new bootstrap.Offcanvas(myOffcanvas);
 
     function play_sound(){
         let audio = new Audio('static/bell.wav');
         audio.play();
         console.log('play sound');
+    }
+
+    function formated_time(t) {
+        return `${("0" + t).slice(-2)}`;
     }
 
     function add_tree(){
@@ -32,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Add new tree to the garden
         let d = new Date();
-        time_end = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
+        time_end = `${formated_time(d.getHours())}:${formated_time(d.getMinutes())}`;
         let garden_tree = document.createElement("div");
         garden_tree.setAttribute("class", "col d-flex justify-content-center text-center");
         garden_tree.innerHTML = `
@@ -54,18 +69,19 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log('Add tree to the garden');
 
 
+
     }
 
     function tear_down_pomo(){
-        document.title = "Pomodoro 25:00";
+        document.title = `Pomodoro ${formated_time(minute)}:${formated_time(second)}`;
         tree.src = 'static/tree/1.jpg';
         time_start = '';
         time_end = '';
-        minute = 25;
-        second = 0;
+        minute = pomo_minute;
+        second = pomo_second;
         pomo_in_row = 0;
-        t_minute.innerHTML = "25:";
-        t_second.innerHTML = "00";
+        t_minute.innerHTML = `${formated_time(pomo_minute)}:`;
+        t_second.innerHTML = `${formated_time(pomo_second)}`;
         stop_button.value = "start";
         stop_button.innerHTML = "Start";
         pause_button.value = "pause";
@@ -78,28 +94,29 @@ document.addEventListener("DOMContentLoaded", function() {
     
     function go_to_break(){
 
-        minute = 5;
-        second = 0;
-        if (pomo_in_row > 0 && pomo_in_row % 4 === 0) {
-            minute = 30;
+        minute = break_m;
+        second = break_s;
+        if (pomo_in_row > 0 && pomo_in_row % lbr_after === 0) {
+            minute = lbreak_m;
+            second = lbreak_s;
         }
         
-        t_minute.innerHTML = `${("0" + minute).slice(-2)}:`;
-        t_second.innerHTML = "00";
+        t_minute.innerHTML = `${formated_time(minute)}:`;
+        t_second.innerHTML = `${formated_time(second)}`;
         tree.src = `static/break.jpg`;
         console.log('Go to break');
     }
 
     function pomo_autostart(){
-        document.title = "25:00";
+        document.title = `${formated_time(minute)}:${formated_time(second)}`;
         tree.src = 'static/tree/1.jpg';
         let d = new Date();
-        time_start = `${("0" + d.getHours()).slice(-2)}:${("0" + d.getMinutes()).slice(-2)}`;
+        time_start = `${formated_time(d.getHours())}:${formated_time(d.getMinutes())}`;
         time_end = '';
-        minute = 25;
-        second = 0;
-        t_minute.innerHTML = "25:";
-        t_second.innerHTML = "00";
+        minute = pomo_minute;
+        second = pomo_second;
+        t_minute.innerHTML = `${formated_time(minute)}:`;
+        t_second.innerHTML = `${formated_time(second)}`;
         pause_button.value = "pause";
         pause_button.innerHTML = "Pause";
         pause_button.disabled = false;
@@ -124,6 +141,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     add_pomo_row_card();
+
+    // run offcanvas on the top of the screen
+    offcanvas.show();
 
     setInterval(function() {
         let timer_active = !is_paused_flag && !is_stop_flag;
@@ -170,8 +190,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             // Time going
             second--;
-            t_minute.innerHTML = ("0" + minute + ":").slice(-3);
-            t_second.innerHTML = ("0" + second).slice(-2);
+            t_minute.innerHTML = formated_time(minute);
+            t_second.innerHTML = formated_time(second);
             document.title = `${t_minute.innerHTML}${t_second.innerHTML}`;
         }        
     }, 1000);
@@ -196,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function() {
             tear_down_pomo();
             console.log("Stop by button");
         }   
-    })
+    });
 
     document.querySelector('#btn_pause').addEventListener("click", function(){
         if (this.value === "pause") {
@@ -210,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function() {
             this.innerHTML = "Pause";
             console.log("Resumed by button");
         }
-    })
+    });
 
     document.querySelector('#breaks').addEventListener("change", function(){
         if (this.checked) {
@@ -223,6 +243,23 @@ document.addEventListener("DOMContentLoaded", function() {
             tear_down_pomo();
         }
         console.log(`swich checked to ${this.checked}`);
+    });
+
+    // offcanvas confirm event
+    document.getElementById('settings_form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission behavior
+        offcanvas.hide();
+                console.log("Offcanvas confirmed");
+        const formData = new FormData(this); // Create a FormData object from the form
+        // Access form data and store it in local JavaScript variables
+        minute = formData.get('pomo_set_minutes');
+        second = formData.get('pomo_set_seconds');
+        break_m = formData.get('br_set_minutes');
+        break_s = formData.get('br_set_seconds');
+        lbreak_m = formData.get('lbr_set_minutes');
+        lbreak_s = formData.get('lbr_set_seconds');
+        lbr_after = formData.get('lbr_after');
+     
     });
 });
 
