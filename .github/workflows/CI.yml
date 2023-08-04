@@ -18,7 +18,10 @@ jobs:
     - run: npm ci
     - name: Run linter for JS and HTML
       run: npm run lint
-    - run: sudo apt-get install -y firefox-geckodriver
+    - name: Setup Geckodriver
+      uses: browser-actions/setup-geckodriver@latest
+    - name: Setup Firefox
+      uses: browser-actions/setup-firefox@latest
     - run: npm run run_server &
     - run: npm run test
     - run: pkill -f http-server
