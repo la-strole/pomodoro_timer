@@ -28,97 +28,84 @@
     <body>
         <main class="container-lg">
           
-                <section class="row align-items-center">
-                    <div class="col-sm-8 mx-auto text-center">
-                        <div>
-                            <span id="minute">25:</span>
-                            <span id="second">00</span>
-                        </div>
-                        <div class="row justify-content-center" id="control_div">
-                    
-                            <button value="start" id="btn_stop" type="button" class="col-4 btn btn-outline-primary btn-lg m-4">Start</button>
-                            <button value="pause" id="btn_pause" type="button" disabled="true" class="col-4 btn btn-outline-primary btn-lg m-4">Pause</button>
-                            <div class="card" style="width: 18rem;" id="row_pomo_card">
-                                <div class="card-body">
-                                    <p class="card-text" id="row_pomo_number">
-                                        0 pomodoro in a row
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+            <section class="row align-items-center">
+                <div class="col-sm-8 mx-auto text-center">
+                    <div>
+                        <span id="minute">25:</span>
+                        <span id="second">00</span>
                     </div>
-                    <div class="col-sm-4">
-                        <img src="static/tree/1.jpg" alt="growing tree" id="current_tree" class="img-fluid"> 
-                    </div>        
-                </section>
+                    <div class="row justify-content-center" id="control_div">
                 
-                <div class="album py-5">
-                    <div class="container p-0">
-                        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-6 g-3" id="garden">
-                            <!-- Add new tree to garden-->
+                        <button value="start" id="btn_stop" type="button" class="col-4 btn btn-outline-primary btn-lg m-4">Start</button>
+                        <button value="pause" id="btn_pause" type="button" disabled class="col-4 btn btn-outline-primary btn-lg m-4">Pause</button>
+                        <div class="card" style="width: 18rem;" id="row_pomo_card">
+                            <div class="card-body">
+                                <p class="card-text" id="row_pomo_number">
+                                    0 pomodoro in a row
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="offcanvas offcanvas-top" tabindex="-1" id="myOffcanvas" aria-labelledby="offcanvasTopLabel">
-                    <div class="offcanvas-header">
-                        <h5 id="offcanvasTopLabel">Settings</h5>
-                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                    </div>
-                    <div class="offcanvas-body container-fluid">
-                        <form class="row justify-content-start align-items-center" id="settings_form">
-                            <div class="row">
-                                <div class="col-lg-2 col-4">
-                                    <label for="pomodoro_time" class="form-label">Pomo time</label>
-                                </div>
-                                <div class="col-lg-1 col-4">
-                                    <input type="number" class="form-control" name="pomo_set_minutes" value="25" min="1" max="60">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-2 col-4">
-                                    <label for="break time" class="form-label">Break time</label>
-                                </div>
-                                <div class="col-lg-1 col-4">
-                                    <input type="number" class="form-control" name="br_set_minutes" value="5" min="1" max="60">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-2 col-4">
-                                    <label for="lbreak time" class="form-label">LB time</label>
-                                </div>
-                                <div class="col-lg-1 col-4">
-                                    <input type="number" class="form-control" name="lbr_set_minutes" value="30" min="1" max="60">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-2 col-4">
-                                    <label for="lb_after" class="form-label">LB after</label>
-                                </div>
-                                <div class="col-lg-1 col-4">
-                                    <input type="number" class="form-control" name="lbr_after" value="4" min="1" max="10">
-                                </div>
-                                
-                            <div class="row align-items-center justify-content-start">
-                                <button type="submit" class="col-lg-1 col-4 btn btn-primary mb-3 mt-3 me-2" id="confirm_button">Confirm</button>
-                                <div class="col-lg-1 col-1"></div>
-                                <div class="col-lg-2 col-6 align-items-center form-switch justify-content-center ms-2">
-                                    
-                                    <input class="form-check-input" type="checkbox" role="switch" id="breaks" checked>
-                                    <label class="form-check-label text-center" for="breaks">Add breaks</label>
-                                    
-                                </div>
-                            </div>
-                        </form>
+                <div class="col-sm-4">
+                    <img src="static/tree/1.jpg" 
+                         alt="growing tree" 
+                         id="current_tree" 
+                         class="img-fluid"
+                    >
+                    <img src="static/break.gif" 
+                        alt="brearking time" 
+                        id="breaking_time" 
+                        class="img-fluid mx-auto my-auto w-50"
+                        style="display: none;"
+                    >
+                </div>        
+            </section>
+                
+            <section class="album py-5">
+                <div class="container p-0">
+                    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-6 g-3" id="garden">
+                        <!-- Add new tree to garden-->
                     </div>
                 </div>
+            </section>
 
-            
+            <div class="offcanvas offcanvas-top" tabindex="-1" id="myOffcanvas" aria-labelledby="offcanvasTopLabel">
+                <div class="offcanvas-header">
+                    <h5 id="offcanvasTopLabel">Settings</h5>
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body container-fluid">
+                    <form class="row justify-content-start align-items-center" id="settings_form">
+                        <div class="row">
+                            <label for="pomo_set_minutes" class="col-lg-2 col-4">Pomo time</label>
+                            <input type="number" class="col-lg-1 col-4" id="pomo_set_minutes" name="pomo_set_minutes" value="25" min="1" max="60">
+                        </div>
+                        <div class="row">
+                            <label for="br_set_minutes" class="col-lg-2 col-4">Break time</label>
+                            <input type="number" class="col-lg-1 col-4" id="br_set_minutes" name="br_set_minutes" value="5" min="1" max="60">
+                        </div>
+                        <div class="row">
+                            <label for="lbr_set_minutes" class="col-lg-2 col-4">LB time</label>
+                            <input type="number" class="col-lg-1 col-4" id="lbr_set_minutes" name="lbr_set_minutes" value="30" min="1" max="60">
+                        </div>
+                        <div class="row">
+                            <label for="lbr_after" class="col-lg-2 col-4">LB after</label>
+                            <input type="number" class="col-lg-1 col-4" id="lbr_after" name="lbr_after" value="4" min="1" max="10">
+                        </div>                         
+                        <div class="row align-items-center justify-content-start">
+                            <button type="submit" class="col-lg-1 col-4 btn btn-primary mb-3 mt-3 me-2" id="confirm_button">Confirm</button>
+                            <div class="col-lg-1 col-1"></div>
+                            <div class="col-lg-2 col-6 align-items-center form-switch justify-content-center ms-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="breaks" checked>
+                                <label class="form-check-label text-center" for="breaks">Add breaks</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>       
         </main>
     </body>
 </html>
-
-
-
 
       

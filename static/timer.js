@@ -14,7 +14,7 @@ class TimerClass {
     this.timer_control = {
       stop_flag: true,
       pause_flag: false,
-      breaking_flag: false
+      breaking_flag: true
     }
 
     this.timer_state = {
