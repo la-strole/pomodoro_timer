@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { expect } from 'chai'
-import * as timer from '../static/timer.js'
+import * as timer from '../public/js/timer.js'
 
 describe('TIMER GLOBAL', () => {
   it('1. correct seconds decrement', () => {

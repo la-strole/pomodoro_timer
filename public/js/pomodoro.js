@@ -35,7 +35,7 @@ function runningTimerDisplays () {
     // Hide breaking image
     displayElements.breaking_image_tag.style.display = 'none'
     // Show initial current tree image
-    displayElements.tree_tag.src = 'static/tree/1.jpg'
+    displayElements.tree_tag.src = '../assets/images/1.jpg'
     displayElements.tree_tag.style.display = 'block'
     // Change buttons state if timer stoped by time and thereis no pomo session
     displayElements.stop_button_tag.value = 'start'
@@ -65,7 +65,7 @@ function runningTimerDisplays () {
         // Hide breaking image
         displayElements.breaking_image_tag.style.display = 'none'
         // Show initial current tree image
-        displayElements.tree_tag.src = 'static/tree/1.jpg'
+        displayElements.tree_tag.src = '../assets/images/1.jpg'
         displayElements.tree_tag.style.display = 'block'
         currentDisplay = 'pomo'
       } else {
@@ -79,7 +79,7 @@ function runningTimerDisplays () {
             treeImageNumber = 26 - (time / timeStep)
             if (treeImageNumber > 25) { treeImageNumber = 25 } else if (treeImageNumber < 2) { treeImageNumber = 2 }
           }
-          displayElements.tree_tag.src = `static/tree/${treeImageNumber}.jpg`
+          displayElements.tree_tag.src = `../assets/images/${treeImageNumber}.jpg`
         }
       }
     }

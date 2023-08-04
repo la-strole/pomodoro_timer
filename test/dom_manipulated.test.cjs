@@ -7,7 +7,7 @@ const { Builder, By } = require('selenium-webdriver')
 const { Options } = require('selenium-webdriver/firefox')
 
 let driver
-const webAppUrl = 'http://127.0.0.1:5500/pomodoro.html'
+const webAppUrl = 'http://127.0.0.1:8080/pomodoro.html'
 
 describe('CLIENT-SIDE INITIAL STATE', () => {
   before(async () => {
