@@ -23,7 +23,7 @@ class TimerClass {
       timer_id: false,
       pomo_session_count: 0,
       pomo_time_start: false,
-      pomo_time_end: true
+      pomo_time_end: false
     }
 
     this.timer_history = []
