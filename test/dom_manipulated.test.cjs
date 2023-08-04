@@ -3,7 +3,7 @@
 
 const chai = require('chai')
 const expect = chai.expect
-const { Builder, By, Key } = require('selenium-webdriver')
+const { Builder, By } = require('selenium-webdriver')
 const { Options } = require('selenium-webdriver/firefox')
 
 let driver
