@@ -10,16 +10,8 @@ const t = new MyTimer()
 // time step in seconds to grow tree
 let timeStep
 let currentDisplay = '' // 'pomo' or 'break'
-// For Testing purposes// Create a Proxy for the module.t variable
-// Create a Proxy for the module.t variable
-const tProxy = new Proxy(t, {
-  get: (target, prop) => {
-    return target[prop] // Return the corresponding property from the original module.t
-  }
-})
 
-// Use the tProxy instead of the module.t
-window.current_timer = tProxy
+window.current_timer = t
 
 const displayElements = {
   minute_tag: document.querySelector('#minute'),
