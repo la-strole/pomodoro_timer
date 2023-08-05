@@ -14,7 +14,7 @@ class TimerClass {
     this.timer_control = {
       stop_flag: true,
       pause_flag: false,
-      breaking_flag: false
+      breaking_flag: true
     }
 
     this.timer_state = {
@@ -23,7 +23,7 @@ class TimerClass {
       timer_id: false,
       pomo_session_count: 0,
       pomo_time_start: false,
-      pomo_time_end: true
+      pomo_time_end: false
     }
 
     this.timer_history = []

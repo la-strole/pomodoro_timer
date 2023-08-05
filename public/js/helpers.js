@@ -1,7 +1,7 @@
 export { playSound, getCurrentTime, formatedTime }
 
 function playSound () {
-  const audio = new Audio('static/bell.wav')
+  const audio = new Audio('../assets/audio/bell.wav')
   audio.play()
   console.log('play sound')
 }
