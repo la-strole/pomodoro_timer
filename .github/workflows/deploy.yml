@@ -41,11 +41,11 @@ jobs:
         with:
           context: .
           load: true
-          tags: ${{ env.TEST_TAG }}
+          tags: pomot_test
       -
         name: Test
         run: |
-          docker run --rm ${{ env.TEST_TAG }}
+          docker run --rm pomo_test
           sudo apt-get install -y curl
           chmod +x /test/dockerImageTest.py
           ./test/dockerImageTest.py
@@ -56,4 +56,4 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.LATEST_TAG }}
+          tags: eugeneparkhom/pomodoro:latest
