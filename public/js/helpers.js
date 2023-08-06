@@ -14,11 +14,3 @@ function getCurrentTime () {
   const d = new Date()
   return `${formatedTime(d.getHours())}:${formatedTime(d.getMinutes())}`
 }
-
-/*
-module.exports = {
-    play_sound,
-    get_current_time,
-    formated_time
-}
-*/
