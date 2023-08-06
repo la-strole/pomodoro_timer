@@ -106,6 +106,7 @@ describe('CLIENT-SIDE test Press start Button pipeline', () => {
     await driver.manage().window().maximize()
     await driver.get(webAppUrl)
     // Submit offcanvas initiate form
+    await driver.sleep(1500)
     await driver.findElement(By.id('confirm_button')).click()
   })
 
@@ -268,6 +269,7 @@ describe('CLIENT-SIDE Press Stop in pomo time', () => {
     await driver.manage().window().maximize()
     await driver.get(webAppUrl)
     // Submit offcanvas initiate form
+    await driver.sleep(1500)
     await driver.findElement(By.id('confirm_button')).click()
   })
   it('1. Shuld be in initate by pomo session screen, set pomo in raw to 0, add tree to the garden', async () => {
@@ -331,6 +333,7 @@ describe('CLIENT-SIDE Press Stop in breaking time', () => {
     await driver.manage().window().maximize()
     await driver.get(webAppUrl)
     // Submit offcanvas initiate form
+    await driver.sleep(1500)
     await driver.findElement(By.id('confirm_button')).click()
   })
   it('1. Shuld be in initate by pomo session screen, set pomo in raw to 0, NOT add tree to the garden', async () => {
@@ -398,6 +401,7 @@ describe('CLIENT-SIDE Press Stop than timer is paused during pomo session', () =
     await driver.manage().window().maximize()
     await driver.get(webAppUrl)
     // Submit offcanvas initiate form
+    await driver.sleep(1500)
     await driver.findElement(By.id('confirm_button')).click()
   })
   it('1. Shuld be in initate by pomo session screen, set pomo in raw to 0, add tree to the garden', async () => {
@@ -462,6 +466,7 @@ describe('CLIENT-SIDE Press Stop than timer is paused during breaking time', () 
     await driver.manage().window().maximize()
     await driver.get(webAppUrl)
     // Submit offcanvas initiate form
+    await driver.sleep(1500)
     await driver.findElement(By.id('confirm_button')).click()
   })
   it('1. Shuld be in initate by pomo session screen, set pomo in raw to 0, NOT add tree to the garden', async () => {
