@@ -16,6 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - 
+        name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+      - 
+        name: Install pre-production dependencies
+        run: npm install --production
+      - 
         name: Build (minification)
         run: npm run build
       - 
