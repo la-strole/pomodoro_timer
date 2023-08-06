@@ -41,7 +41,7 @@ jobs:
         with:
           context: .
           load: true
-          tags: pomot_test
+          tags: pomo_test
       -
         name: Test
         run: |
