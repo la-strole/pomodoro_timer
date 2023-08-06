@@ -1,6 +1,0 @@
-# Ignore all files
-*
-# Include the specific folder
-!dist/
-!src/
-
