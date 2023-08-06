@@ -45,7 +45,7 @@ jobs:
       -
         name: Test
         run: |
-          docker run --rm pomo_test
+          docker run --rm -d -p 8080:80 pomo_test
           sudo apt-get install -y curl
           chmod +x /test/dockerImageTest.py
           ./test/dockerImageTest.py
