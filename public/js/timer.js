@@ -126,8 +126,4 @@ class TimerClass {
   add_tree () {}
 }
 
-/*
-module.exports =  timer_class;
-*/
-// Delete for mocha testing
 export { TimerClass }
