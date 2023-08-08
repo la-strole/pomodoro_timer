@@ -11,7 +11,7 @@ on:
       - 'src/**'
 
 jobs:
-  TestSuite:
+  TestSuitePR:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
