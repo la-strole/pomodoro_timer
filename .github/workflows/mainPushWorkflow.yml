@@ -1,4 +1,4 @@
-name: Deploy pipeline
+name: Push to main
 
 on:
   push:
@@ -9,9 +9,9 @@ on:
       - 'public/**'
       - 'src/**'
       - 'Dockerfile'
-      - '.github/workflows/*.yml'
+
 jobs:
-  Deployment:
+  Test_by_pushin_to_main:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
