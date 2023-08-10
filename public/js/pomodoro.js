@@ -55,7 +55,7 @@ function runningTimerDisplays () {
         displayElements.breaking_image_tag.style.display = 'block'
         // Change pomo in raw state
         displayElements.pomo_in_row_count_tag.innerHTML = `${t.timer_state.pomo_session_count} pomodoro in a row`
-        // Change Breaking display flag (to not override DOM elements ebery second)
+        // Change Breaking display flag (to not override DOM elements every second)
         currentDisplay = 'break'
       }
     } else { // If it is pomo time
