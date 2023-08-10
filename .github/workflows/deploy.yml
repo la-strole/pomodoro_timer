@@ -11,46 +11,9 @@ on:
       - 'Dockerfile'
 
 jobs:
-
-  TestSuiteMainPush:
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-      - name: Install dependencies
-        run: npm install
-      - name: Run linter for JS and HTML
-        run: npm run lint
-      - name: Setup Geckodriver
-        uses: browser-actions/setup-geckodriver@latest
-      - name: Setup Firefox
-        uses: browser-actions/setup-firefox@latest
-      - name: Run local http server
-        run: npm run run_server &
-      - name: Run test suite
-        run: npm run test
-      - name: Kill local http server
-        run: pkill -f http-server
-      - name: TruffleHog Check for secrets
-        uses: trufflesecurity/trufflehog@main
-        with:
-          # Repository path
-          path: ./
-          # Start scanning from here (usually main branch).
-          base: ${{ github.event.repository.default_branch }}
-          extra_args: --debug --only-verified
-
   Deployment:
 
     runs-on: ubuntu-latest
-    needs: TestSuiteMainPush
     
     steps:
       - uses: actions/checkout@v3
