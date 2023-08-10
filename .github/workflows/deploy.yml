@@ -13,7 +13,9 @@ on:
 jobs:
 
   TestSuiteMainPush:
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -46,8 +48,10 @@ jobs:
           extra_args: --debug --only-verified
 
   Deployment:
+
     runs-on: ubuntu-latest
     needs: TestSuiteMainPush
+    
     steps:
       - uses: actions/checkout@v3
       - 
@@ -88,6 +92,5 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
           push: true
-          tags: eugeneparkhom/pomodoro:latest
+          tags: eugeneparkhom/pomodoro:0.1.${{ github.run_number }}
