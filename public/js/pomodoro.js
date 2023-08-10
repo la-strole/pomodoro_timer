@@ -118,6 +118,7 @@ function addTreeToGarden () {
 document.addEventListener('DOMContentLoaded', function () {
   // Create a Bootstrap offcanvas instance
   const myOffcanvas = document.querySelector('#myOffcanvas')
+  // eslint-disable-next-line no-undef
   const offcanvas = new bootstrap.Offcanvas(myOffcanvas)
   offcanvas.backdrop = false
   offcanvas.keyboard = false
