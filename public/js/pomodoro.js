@@ -25,7 +25,7 @@ const displayElements = {
 }
 
 function runningTimerDisplays () {
-  // Change title and pomodoro time (do it always)
+  // Change the document title and pomodoro time (do it always)
   document.title = `${helpers.formatedTime(t.timer_state.minutes)}:${helpers.formatedTime(t.timer_state.seconds)}`
   displayElements.minute_tag.innerHTML = helpers.formatedTime(t.timer_state.minutes) + ':'
   displayElements.second_tag.innerHTML = helpers.formatedTime(t.timer_state.seconds)
