@@ -30,7 +30,7 @@ function runningTimerDisplays () {
   displayElements.minute_tag.innerHTML = helpers.formatedTime(t.timer_state.minutes) + ':'
   displayElements.second_tag.innerHTML = helpers.formatedTime(t.timer_state.seconds)
 
-  // If timer stopped by button or by time without pomo session - initialize tree and change buttons
+  // If timer stopped by button or by time without pomo session - initialize tree and change the buttons
   if (t.timer_control.stop_flag) {
     // Hide breaking image
     displayElements.breaking_image_tag.style.display = 'none'
