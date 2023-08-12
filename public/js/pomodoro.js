@@ -7,7 +7,7 @@ class MyTimer extends timer.TimerClass {
   add_tree = addTreeToGarden
 }
 const t = new MyTimer()
-// Time step in seconds to grow the tree
+// Time step in seconds to  grow the tree
 let timeStep
 let currentDisplay = '' // 'pomo' or 'break'
 
