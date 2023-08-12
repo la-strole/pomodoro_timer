@@ -24,7 +24,7 @@ jobs:
           node-version: '18.x'
       - 
         name: Install pre-production dependencies
-        run: npm install --only=production
+        run: npm install --omit=dev
       - 
         name: Build (minification)
         run: npm run build
@@ -50,10 +50,10 @@ jobs:
           docker run --rm -d -p 8080:80 pomo_test
           chmod +x ./test/dockerImageTest.py
           ./test/dockerImageTest.py
+
       -
-        name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: eugeneparkhom/pomodoro:1.0.${{ github.run_number }}
+        name: Push Docker image
+        run: |
+          docker tag pomo_test eugeneparkhom/pomodoro:1.0.${{ github.run_number }}
+          docker push eugeneparkhom/pomodoro:1.0.${{ github.run_number }}
+    
