@@ -30,7 +30,7 @@ function runningTimerDisplays () {
   displayElements.minute_tag.innerHTML = helpers.formatedTime(t.timer_state.minutes) + ':'
   displayElements.second_tag.innerHTML = helpers.formatedTime(t.timer_state.seconds)
 
-  // If the timer is stopped either by pressing a button or due to the timer running out without a Pomodoro session, 
+  // If the timer is stopped either by pressing a button or due to the timer running out without a Pomodoro session
   // then initialize the tree and update the buttons accordingly.
   if (t.timer_control.stop_flag) {
     // Conceal the image for the breaking time.
