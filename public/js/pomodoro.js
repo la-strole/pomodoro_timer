@@ -7,7 +7,7 @@ class MyTimer extends timer.TimerClass {
   add_tree = addTreeToGarden
 }
 const t = new MyTimer()
-// Time step in seconds to grow the tree
+// The time step in seconds for tree growth.
 let timeStep
 let currentDisplay = '' // 'pomo' or 'break'
 
@@ -25,51 +25,52 @@ const displayElements = {
 }
 
 function runningTimerDisplays () {
-  // Change the document title and pomodoro time (do it always)
+  // Always modify the document title and adjust the Pomodoro time.
   document.title = `${helpers.formatedTime(t.timer_state.minutes)}:${helpers.formatedTime(t.timer_state.seconds)}`
   displayElements.minute_tag.innerHTML = helpers.formatedTime(t.timer_state.minutes) + ':'
   displayElements.second_tag.innerHTML = helpers.formatedTime(t.timer_state.seconds)
 
-  // If timer stopped by button or by time without pomo session - initialize tree and change the buttons
+  // If the timer is stopped either by pressing a button or due to the timer running out without a Pomodoro session, 
+  // then initialize the tree and update the buttons accordingly.
   if (t.timer_control.stop_flag) {
-    // Hide breaking image
+    // Conceal the image for the breaking time.
     displayElements.breaking_image_tag.style.display = 'none'
-    // Show initial current tree image
+    // Display the original current tree image.
     displayElements.tree_tag.src = '../assets/images/1.jpg'
     displayElements.tree_tag.style.display = 'block'
-    // Change buttons state if timer stoped by time and thereis no pomo session
+    // Modify the state of the buttons if the timer stops due to time elapsing and there is no ongoing Pomodoro session.
     displayElements.stop_button_tag.value = 'start'
     displayElements.stop_button_tag.innerHTML = 'Start'
     displayElements.pause_button_tag.value = 'pause'
     displayElements.pause_button_tag.innerHTML = 'Pause'
     displayElements.pause_button_tag.disabled = true
-    // Change pomo in raw state
+    // Modify pomo in raw state.
     displayElements.pomo_in_row_count_tag.innerHTML = `${t.timer_state.pomo_session_count} pomodoro in a row`
-  } else { // If timer is running
+  } else { // If the timer is running
     // If it is breaking time
     if (!t.timer_control.breaking_flag) {
       if (currentDisplay !== 'break') {
-        // Hide tree image
+        // Conceal the tree image.
         displayElements.tree_tag.style.display = 'none'
         // Show breaking image
         displayElements.breaking_image_tag.style.display = 'block'
         // Change pomo in raw state
         displayElements.pomo_in_row_count_tag.innerHTML = `${t.timer_state.pomo_session_count} pomodoro in a row`
-        // Change Breaking display flag (to not override DOM elements ebery second)
+        // Modify the breaking display flag to prevent overwriting DOM elements every second.
         currentDisplay = 'break'
       }
     } else { // If it is pomo time
-      // If timer is running in pomo
-      // If it is initial pomo
+      // If the timer is currently active during a Pomodoro session.
+      // If it's the initial Pomodoro session.
       if (currentDisplay !== 'pomo') {
-        // Hide breaking image
+        // Conceal the image for the breaking time.
         displayElements.breaking_image_tag.style.display = 'none'
-        // Show initial current tree image
+        // Display the original current tree image.
         displayElements.tree_tag.src = '../assets/images/1.jpg'
         displayElements.tree_tag.style.display = 'block'
         currentDisplay = 'pomo'
       } else {
-        // Change tree image if it is timestep
+        // Update the tree image if the time step is reached.
         const time = t.timer_state.minutes * 60 + t.timer_state.seconds
         if (time % timeStep === 0) {
           let treeImageNumber
@@ -87,13 +88,13 @@ function runningTimerDisplays () {
 }
 
 function addTreeToGarden () {
-  // Get current tree image
+  // Retrieve the current tree image.
 
   const gardenTreeWidth = Math.floor(displayElements.tree_tag.clientWidth / 2)
   const gardenTreeHeight = Math.floor(displayElements.tree_tag.clientHeight / 2)
   const currentDate = new Date()
 
-  // Add new tree to the garden
+  // Include a new tree in the garden.
   const times = t.timer_history.at(-1)
   const gardenTree = document.createElement('div')
   gardenTree.setAttribute('class', 'col d-flex justify-content-center text-center')
@@ -117,7 +118,7 @@ function addTreeToGarden () {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Create bootstrap offcanvas instance
+  // Instantiate a Bootstrap offcanvas component.
   const myOffcanvas = document.querySelector('#myOffcanvas')
   // eslint-disable-next-line no-undef
   const offcanvas = new bootstrap.Offcanvas(myOffcanvas)
@@ -126,19 +127,19 @@ document.addEventListener('DOMContentLoaded', function () {
   offcanvas.scroll = false
   // Run offcanvas on the top of the screen
   offcanvas.show()
-  // Get settings from offcanvas form
+  // Retrieve settings from the offcanvas form.
   document.getElementById('settings_form').addEventListener('submit', function (event) {
     event.preventDefault() // Prevent the default form submission behavior
 
     const formData = new FormData(this) // Create a FormData object from the form
-    // Access form data and store it in local JavaScript variables
+    // Retrieve the data from the form and save it in local JavaScript variables.
     t.timer_init.m = parseInt(formData.get('pomo_set_minutes'))
     t.timer_init.b_m = parseInt(formData.get('br_set_minutes'))
     t.timer_init.lb_m = parseInt(formData.get('lbr_set_minutes'))
     t.timer_init.b_after = parseInt(formData.get('lbr_after'))
     const swichState = document.getElementById('breaks')
     t.timer_init.pomo_session = !!swichState.checked
-    // Delete pomo in line section if use as timer
+    // Remove the Pomodoro in-line section if it's being used as a timer.
     if (!t.timer_init.pomo_session) {
       displayElements.pomo_row_card.style.display = 'none'
     }
@@ -150,10 +151,10 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('Offcanvas confirmed')
   })
 
-  // Add Event listeners
-  // Start button
+  // Incorporate event listeners.
+  // Start button functionality.
   displayElements.stop_button_tag.addEventListener('click', () => {
-    // If it is start button
+    // If the button is the start button.
     if (displayElements.stop_button_tag.value === 'start') {
       t.start_timer()
       displayElements.stop_button_tag.value = 'stop'
@@ -169,9 +170,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   })
 
-  // Pause button
+  // Pause button functionality.
   displayElements.pause_button_tag.addEventListener('click', () => {
-    // If it is pause button
+    // If the button is the pause button
     if (displayElements.pause_button_tag.value === 'pause') {
       t.pause_timer()
       displayElements.pause_button_tag.value = 'resume'
