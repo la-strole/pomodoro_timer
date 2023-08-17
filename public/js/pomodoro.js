@@ -54,7 +54,7 @@ function runningTimerDisplays () {
         displayElements.tree_tag.style.display = 'none'
         // Show breaking image
         displayElements.breaking_image_tag.style.display = 'block'
-        // Change pomo in raw state
+        // Update pomo in raw state
         displayElements.pomo_in_row_count_tag.innerHTML = `${t.timer_state.pomo_session_count} pomodoro in a row`
         // Modify the breaking display flag to prevent overwriting DOM elements every second.
         currentDisplay = 'break'
