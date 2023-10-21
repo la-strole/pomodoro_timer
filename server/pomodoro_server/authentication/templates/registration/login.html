@@ -1,0 +1,66 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<style>
+    .bd-placeholder-img {
+      font-size: 1.125rem;
+      text-anchor: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+      }
+    }
+</style>
+
+  {% if form.errors %}
+    <h2 class="text-center">Your username and password didn't match. Please try again.</h2>
+  {% endif %}
+
+  {% if next %}
+    {% if user.is_authenticated %}
+      <h2>Your account doesn't have access to this page. To proceed,
+      please login with an account that has access.</h2>
+    {% else %}
+      <h2>Please login to see this page.</h2>
+    {% endif %}
+  {% endif %}
+
+    <div class="w-100 text-center">
+      <main class="form-signin">
+        <form method="post" action="{% url 'login' %}">
+          {% csrf_token %}
+
+          <h1 class="h3 mb-3 fw-normal">Please login</h1>
+      
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="label" placeholder="Username" name="username">
+            <label for="label">{{ form.username.label_tag }}</label>
+          </div>
+          <div class="form-floating">
+            <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password">
+            <label for="floatingPassword">{{ form.password.label_tag }}</label>
+          </div>
+          <button class="w-100 btn btn-lg btn-primary" type="submit">Log in</button>
+          <input type="hidden" name="next" value="{{ next }}">
+          {# Assumes you setup the password_reset view in your URLconf #}
+        </form>
+      </main>
+      <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+    </div>
+
+{% endblock %}
+
+
+
+    
+
+
+
+
+
+
