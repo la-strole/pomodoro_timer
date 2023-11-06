@@ -2,9 +2,12 @@ import json
 import logging
 from datetime import datetime
 
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 
 from . import helper_cryptography, models
 
@@ -145,3 +148,77 @@ def get_pomo_record(request) -> JsonResponse:
     else:
         LOGGER.error("Invalid client request method: %s", request.method)
         return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+def login_user(request) -> JsonResponse:
+    """
+    Login the user
+    """
+    if request.method == "POST":
+        # Get user credentials
+        try:
+            json_data: dict = json.loads(request.body.decode("utf-8"))
+            username: str = json_data["username"]
+            password: str = json_data["password"]
+        except Exception as e:
+            LOGGER.error(
+                "Can not parse login request, %s error: %s",
+                request.body.decode("utf-8"),
+                e,
+            )
+            return JsonResponse(data={"error": "Invalid JSON data"}, status=400)
+        # Try to validate user
+        user = authenticate(request, username=username, password=password)
+        if not user:
+            LOGGER.debug("Login failed username=%s", username)
+            return JsonResponse(
+                {"error": "Invalid authentification attempt"}, status=401
+            )
+
+        login(request, user)
+        return JsonResponse({"success": ""})
+
+    LOGGER.error("Got invalid login request method: %s", request.method)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+def signin_user(request) -> JsonResponse:
+    """
+    Sign in a user
+    """
+    if request.method == "POST":
+        # Get user credentials
+        try:
+            json_data = json.loads(request.body.decode("utf-8"))
+            username = json_data["username"]
+            password = json_data["password"]
+            LOGGER.debug("User: %s, Password: %s", username, password)
+        except Exception as e:
+            LOGGER.error(
+                "Can not parse signin request, %s, error:%s",
+                request.body.decode("utf-8"),
+                e,
+            )
+            return JsonResponse({"error": "Invalid JSON data"}, status=400)
+        # Add new user to the database
+        # TODO sanitation and validation pydantic https://stackoverflow.com/questions/16861/sanitising-user-input-using-python
+        try:
+            new_user = User.objects.create_user(username=username, password=password)
+            login(request, new_user)
+            LOGGER.debug("Create new user: %s", username)
+            return JsonResponse({"success": new_user.username})
+        except Exception as e:
+            LOGGER.error("Can not create new user: %s", e)
+            return JsonResponse({"error": "Invalid user credentials"}, status=400)
+
+    LOGGER.error("Got invalid signin request method: %s", request.method)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@ensure_csrf_cookie
+def csrf_token(request) -> JsonResponse:
+    """
+    Return CSRF token as cookie
+    """
+    return JsonResponse({"success": ""})

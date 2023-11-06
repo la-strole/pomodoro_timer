@@ -118,15 +118,19 @@ function addTreeToGarden () {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Instantiate a Bootstrap offcanvas component.
+  // Nav bar
+  document.querySelector('#navUserName').style.display = 'none'
+  document.querySelector('#navLogoutLink').style.display = 'none'
+
+  // Instantiate a Bootstrap offcanvas components.
   const myOffcanvas = document.querySelector('#myOffcanvas')
   // eslint-disable-next-line no-undef
-  const offcanvas = new bootstrap.Offcanvas(myOffcanvas)
-  offcanvas.backdrop = false
-  offcanvas.keyboard = false
-  offcanvas.scroll = false
-  // Run offcanvas on the top of the screen
-  offcanvas.show()
+  const settingsOffcanvas = new bootstrap.Offcanvas(myOffcanvas)
+  settingsOffcanvas.backdrop = false
+  settingsOffcanvas.keyboard = false
+  settingsOffcanvas.scroll = false
+  // Run settings offcanvas on the top of the screen
+  settingsOffcanvas.show()
   // Retrieve settings from the offcanvas form.
   document.getElementById('settings_form').addEventListener('submit', function (event) {
     event.preventDefault() // Prevent the default form submission behavior
@@ -145,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     timeStep = Math.floor((t.timer_init.m * 60) / 25)
     console.log('Settings updated')
-    offcanvas.hide()
+    settingsOffcanvas.hide()
     displayElements.minute_tag.innerHTML = helpers.formatedTime(t.timer_init.m) + ':'
     displayElements.second_tag.innerHTML = '00'
     console.log('Offcanvas confirmed')
