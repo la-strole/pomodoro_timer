@@ -1,5 +1,8 @@
 // eslint-disable-next-line no-use-before-define
-export { login, signin, logout, getCsrfToken, isAuthenificated, setAsanaToken, BASE_URL }
+export {
+  login, signin, logout, getCsrfToken,
+  isAuthenificated, setAsanaToken, getAsanaToken, getAsanaTasks, BASE_URL
+}
 
 // Set the real path in production
 const BASE_URL = 'http://127.0.0.1:8888/backend/api/'
@@ -9,6 +12,7 @@ const SIGNIN_URL = BASE_URL + 'auth/signin'
 const WHOAMI_URL = BASE_URL + 'auth/whoami'
 const GETCSRFTOKEN_URL = BASE_URL + 'auth/get_csrf_token'
 const ASANATOKEN_URL = BASE_URL + 'asana'
+const ASANABASEURL = 'https://app.asana.com/api/1.0'
 
 function getCookie (name) {
   const value = `; ${document.cookie}`
@@ -166,4 +170,123 @@ async function setAsanaToken (token) {
     console.log('ASANA API error: ' + error)
     return -1
   }
+}
+
+async function getAsanaToken () {
+  // Get Asana PAT from server
+
+  try {
+    const response = await fetch(ASANATOKEN_URL, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      credentials: 'same-origin'
+    })
+    if (!response.ok) {
+      console.log('Asana get token error. Response status: ' + response.status)
+      return -1
+    }
+    const data = await response.json()
+    return data.api_key
+  } catch (error) {
+    console.log('Error in asana get token API. Error: ' + error)
+    return -1
+  }
+}
+async function getAsanaUserWorkspaces (token) {
+  // Get list of user's workspaces from Asana API
+  // https://developers.asana.com/reference/getworkspaces
+  const url = ASANABASEURL + '/workspaces?' + new URLSearchParams({ limit: '50' })
+  try {
+    const response = await fetch(url, {
+      headers: {
+        accept: 'application/json',
+        authorization: 'Bearer ' + token
+      }
+    })
+    if (!response.ok) {
+      console.log('Error with asana API get users workspaces. Response status: ' + response.status)
+      return -1
+    }
+    const jsonData = await response.json()
+    return jsonData.data
+  } catch (error) {
+    console.log('Asana getAsanaUserWorkspaces error: ' + error)
+    return -1
+  }
+}
+
+async function getAsanaUserTaskList (token, workspaceId) {
+  // Get a user's task list
+  // https://developers.asana.com/reference/getusertasklistforuser
+  const url = ASANABASEURL + '/users/me/user_task_list?' + new URLSearchParams({ workspace: workspaceId })
+  try {
+    const response = await fetch(url, {
+      headers: {
+        accept: 'application/json',
+        authorization: 'Bearer ' + token
+      }
+    })
+    if (!response.ok) {
+      console.log('error with asana API get asana user task list. Response status: ' + response.status)
+      return -1
+    }
+    const jsonData = await response.json()
+    return jsonData
+  } catch (error) {
+    console.log('Error with asana API get user task list. error:' + error)
+    return -1
+  }
+}
+
+async function getAsanaTasksFromTasklist (token, userTaskListGid) {
+  // Get tasks from a user task list
+  // https://developers.asana.com/reference/getusertasklistforuser
+  const url = `${ASANABASEURL}/user_task_lists/${userTaskListGid}/tasks?${new URLSearchParams({ completed_since: 'now' })}`
+  try {
+    const response = await fetch(url, {
+      headers: {
+        accept: 'application/json',
+        authorization: 'Bearer ' + token
+      }
+    })
+    if (!response.ok) {
+      console.log('Error with asana API get tasks from tasklist. Response status: ' + response.status)
+      return -1
+    }
+    const jsonData = await response.json()
+    return jsonData
+  } catch (error) {
+    console.log('Error with asana API get asana task from task list. error: ' + error)
+    return -1
+  }
+}
+
+async function getAsanaTasks (token) {
+  // Retrurn tasks from users PAT
+  // [{workspaceName: 'workspace_name', workspaceTasks: [{gid: 'task_gid', name: 'task_name'}, ... ]}, ...]
+  const result = []
+  // Get users workspaces (list of workspaces)
+  const workspaces = await getAsanaUserWorkspaces(token)
+  if (workspaces !== -1) { // If no errors
+    workspaces.forEach(async (workspace) => {
+      // Get users task lists
+      const taskLists = await getAsanaUserTaskList(token, workspace.gid)
+      if (taskLists !== -1) { // If no errors
+        // Get tasks
+        const tasksData = await getAsanaTasksFromTasklist(token, taskLists.data.gid)
+        if (tasksData !== -1) { // If no errors
+          // Add tasks to returned result
+          const tasks = []
+          tasksData.data.forEach((task) => {
+            tasks.push({ gid: task.gid, name: task.name })
+          })
+          result.push({ workspaceName: workspace.name, workspaceTasks: tasks })
+        }
+      }
+    })
+    return result
+  }
+  return -1
 }

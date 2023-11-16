@@ -1,8 +1,6 @@
 import * as api from './api.js'
 import * as navBar from './nav_bar.js'
 
-let asanaSignedIn = false
-
 function changePasswordVisability (passwordInputElement) {
   // Change password visibility for DOM input passwords
   if (passwordInputElement.type === 'password') {
@@ -102,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Send Asana PAT to the server
       const asanaResponse = await api.setAsanaToken(asanaPatData)
       if (asanaResponse === 0) {
-        asanaSignedIn = true // Global variable
+        console.log('Successfully sent Asana PAT')
       }
       // Change nav bar
       navBar.userState(formData.get('username'))
