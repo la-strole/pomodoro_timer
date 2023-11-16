@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,13 +19,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# TODO SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-$bi4g!vdexm$(ve9jd@7@w=r0fu_q%1^h1zj2kz43w^1jbob=*"
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# TODO SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1:8888", "127.0.0.1"]
 
 
 # Application definition
@@ -38,16 +37,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders",
-    # TODO remove in prodaction
-    "django_extensions",
+    # "corsheaders", Look at django-cors-headers
     "pomo",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
+    # "corsheaders.middleware.CorsMiddleware", Look at django-cors-headers
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -127,17 +124,25 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# For case if backend and frontend would be on separate domains
+"""
 CORS_ALLOWED_ORIGINS = [
     "http://192.168.1.117:8080",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+"""
+SESSION_COOKIE_SAMESITE = "Strict"
+CSRF_COOKIE_SAMESITE = "Strict"
 
-SESSION_COOKIE_SAMESITE = "None"
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SECURE = False  # Make sure to use https on ngnix reverse proxy
+CSRF_COOKIE_SECURE = False  # Make sure to use https on ngnix reverse proxy
 
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True  # To make JS get access to session cookie
+CSRF_COOKIE_HTTPONLY = False
+
+# TODO change this in production
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8888"]
 
 # Add logger
 LOGGING = {

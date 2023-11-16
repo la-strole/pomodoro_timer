@@ -14,10 +14,10 @@
     },
     "type": "module",
     "scripts": {
-        "test": "mocha -r esm --timeout 10000",
+        "test": "npm run run_server && mocha -r esm --timeout 10000",
         "build": "mkdir dist | cp -r ./assets ./dist | cp -r ./public/css ./dist/ | grunt minification",
         "lint": "grunt lint",
-        "run_server": "npx http-server --root public"
+        "run_server": "npx http-server --root -p 8080 -a 127.0.0.1 public"
     },
     "author": "la-strole",
     "license": "MIT",

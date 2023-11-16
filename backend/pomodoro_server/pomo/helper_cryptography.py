@@ -3,7 +3,6 @@ Helper module for cryptographic operations
 """
 
 import logging
-import os
 
 from cryptography.fernet import Fernet
 

@@ -9,3 +9,6 @@ docker_run_test:
 
 docker_run_prod:
 	docker run --name pomo_timer_container -d -t --rm -p 8080:80 pomodoro_production
+
+run_dev_server:
+	npm run run_server

@@ -1,11 +1,13 @@
 module.exports = function (grunt) {
   grunt.initConfig({
+
     eslint: {
       target: ['public/js/*.js']
     },
+
     htmlhint: {
       options: {
-        htmlhintrc: '.htmlhintrc' // Create an HTMLHint configuration file
+        htmlhintrc: '.htmlhintrc' // Create an HTMLLint configuration file
       },
       src: ['public/*.html']
     },
@@ -21,6 +23,7 @@ module.exports = function (grunt) {
         }
       }
     },
+
     uglify: {
       my_target: {
         files: [{
@@ -34,6 +37,7 @@ module.exports = function (grunt) {
     }
 
   })
+
   grunt.loadNpmTasks('grunt-eslint')
   grunt.loadNpmTasks('grunt-htmlhint')
   grunt.loadNpmTasks('grunt-contrib-htmlmin')

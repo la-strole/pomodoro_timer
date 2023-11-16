@@ -1,5 +1,7 @@
 import * as api from './api.js'
 
+let asanaSignedIn = false
+
 function changePasswordVisability (passwordInputElement) {
   // Change password visibility for DOM input passwords
   if (passwordInputElement.type === 'password') {
@@ -22,6 +24,24 @@ function changePasswordVisability (passwordInputElement) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  // Check if user is already signed in
+  api.isAuthenificated()
+    .then((username) => {
+      if (username !== 0 && username !== -1) { // If user is already signed in
+        console.log('User is already signed in as ' + username)
+        // Change nav bar
+        const navUsername = document.querySelector('#navUserName')
+        navUsername.innerHTML = username
+        navUsername.style.display = 'block'
+
+        document.querySelector('#navLoginLink').style.display = 'none'
+        document.querySelector('#navLogoutLink').style.display = 'block'
+
+        document.querySelector('#navDetails').classList.remove('disabled')
+      }
+    })
+
+  // Set offcanvas for login and signin forms
   const offacnvasLogin = document.querySelector('#offcanvasLogin')
   const offcanvasSignin = document.querySelector('#offcanvasSignIn')
   // eslint-disable-next-line no-undef
@@ -34,12 +54,31 @@ document.addEventListener('DOMContentLoaded', function () {
   signinOffcanvas.backdrop = false
   signinOffcanvas.keyboard = false
   signinOffcanvas.scroll = false
+
   // Nav Bar functionality
+  // Login link
   document.querySelector('#navLoginLink').addEventListener('click', () => {
     // Show Login offcanvas
     loginOffcanvas.show()
   })
-  // Sign in link functionality
+  // Logout Link
+  document.querySelector('#navLogoutLink').addEventListener('click', async function () {
+    // Logout user on server with API
+    const reslult = await api.logout()
+    if (reslult !== -1) {
+      // Change DOM nav menu
+      const navUsername = document.querySelector('#navUserName')
+      navUsername.style.display = 'none'
+
+      document.querySelector('#navLoginLink').style.display = 'block'
+      document.querySelector('#navLogoutLink').style.display = 'none'
+
+      document.querySelector('#navDetails').classList.add('disabled')
+    } else {
+      alert('Can not logout. Please connect to site administrator.')
+    }
+  })
+  // Signin link functionality
   document.querySelector('#signInLink').addEventListener('click', () => {
     loginOffcanvas.hide()
     signinOffcanvas.show()
@@ -54,40 +93,62 @@ document.addEventListener('DOMContentLoaded', function () {
     })
   })
 
-  document.querySelector('#signInForm').addEventListener('submit', function (event) {
+  // Sigin functionality. Sign in new user and make DOM changes
+  document.querySelector('#signInForm').addEventListener('submit', async function (event) {
     event.preventDefault() // Prevent the default form submission behavior
+
+    // Get user credentials
+    const formData = new FormData(this) // Create a FormData object from the form
+    const authJsonData = { username: formData.get('username'), password: formData.get('password') }
+    const asanaPatData = { api_key: formData.get('asanaAPI') }
+    // Sign in new user on the server
+    const result = await api.signin(authJsonData)
+
+    if (result !== -1) {
+      // Send Asana PAT to the server
+      const asanaResponse = await api.setAsanaToken(asanaPatData)
+      if (asanaResponse === 0) {
+        asanaSignedIn = true // Global variable
+      }
+      // Change nav bar
+      const navUsername = document.querySelector('#navUserName')
+      navUsername.innerHTML = formData.get('username')
+      navUsername.style.display = 'block'
+
+      document.querySelector('#navLoginLink').style.display = 'none'
+      document.querySelector('#navLogoutLink').style.display = 'block'
+
+      document.querySelector('#navDetails').classList.remove('disabled')
+      signinOffcanvas.hide()
+    } else {
+      alert('Can not sign in. Try to connect with site administrator')
+    }
+  })
+
+  // Login functionality. Login user and make DOM changes
+  document.querySelector('#logInForm').addEventListener('submit', async function (event) {
+    event.preventDefault() // Prevent the default form submission behavior
+
+    // Get user credentials
     const formData = new FormData(this) // Create a FormData object from the form
     const jsonData = { username: formData.get('username'), password: formData.get('password') }
-    // Sign in the user on thw server
-    api.apiRequest(api.BASE_URL + 'auth/signin', 'POST', 'FAKE_csrftoken', jsonData).then((responseJson) => {
-      console.log(`responeJson=${responseJson}`)
-      if (responseJson !== -1) {
-        // Change nav bar
-        console.log('i am here')
-        const navUsername = document.querySelector('#navUserName')
-        navUsername.innerHTML = formData.get('username')
-        navUsername.style.display = 'block'
 
-        document.querySelector('#navLoginLink').style.display = 'none'
-        document.querySelector('#navLogoutLink').style.display = 'block'
+    // Log in user on the server
+    const result = await api.login(jsonData)
 
-        document.querySelector('#navDetails').classList.remove('disabled')
-        signinOffcanvas.hide()
-      }
-    })
-  })
-  document.querySelector('#logInForm').addEventListener('submit', function (event) {
-    event.preventDefault() // Prevent the default form submission behavior
+    if (result !== -1) {
+      // Change nav bar
+      const navUsername = document.querySelector('#navUserName')
+      navUsername.innerHTML = formData.get('username')
+      navUsername.style.display = 'block'
 
-    const formData = new FormData(this) // Create a FormData object from the form
-    // Retrieve the data from the form and save it in local JavaScript variables.
+      document.querySelector('#navLoginLink').style.display = 'none'
+      document.querySelector('#navLogoutLink').style.display = 'block'
 
-    console.log(`Logged In ${Array.from(formData)}`)
+      document.querySelector('#navDetails').classList.remove('disabled')
+      loginOffcanvas.hide()
+    } else {
+      alert('Can not log in. Try to connect with site administrator')
+    }
   })
 })
-
-async function getCsrfToken () {
-  const promise = fetch('http://127.0.0.1:8000/api/auth/csrf')
-  console.log('inside getCsrfToken function')
-  return promise
-}

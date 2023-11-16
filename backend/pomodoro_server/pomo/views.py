@@ -2,12 +2,13 @@ import json
 import logging
 from datetime import datetime
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET, require_POST
 
 from . import helper_cryptography, models
 
@@ -22,11 +23,12 @@ def asana_api_key(request) -> JsonResponse:
     """
     # Get API key
     if request.method == "POST":
-        api_key = request.POST.get("api_key", "")
+        json_data = json.loads(request.body.decode("utf-8"))
+        api_key = json_data.get("api_key", "")
 
         if not api_key:
             error_msg = f"Can not found API key in request. User: {request.user}."
-            LOGGER.error(error_msg)
+            LOGGER.warning(error_msg)
             return JsonResponse({"error": "Invalid JSON data."}, status=400)
 
         #  TODO Add check for API key
@@ -45,7 +47,7 @@ def asana_api_key(request) -> JsonResponse:
         try:
             asana_api.save()
             LOGGER.debug("Successfully add API key for user %s", request.user)
-            return JsonResponse({"message": "JSON data processed successfully"})
+            return JsonResponse({"success": "JSON data processed successfully"})
 
         except Exception as database_error:
             error_msg = f"Can not save Asana API key to database. \
@@ -150,75 +152,101 @@ def get_pomo_record(request) -> JsonResponse:
         return JsonResponse({"error": "Invalid request method"}, status=405)
 
 
+@require_POST
 def login_user(request) -> JsonResponse:
     """
     Login the user
     """
-    if request.method == "POST":
-        # Get user credentials
-        try:
-            json_data: dict = json.loads(request.body.decode("utf-8"))
-            username: str = json_data["username"]
-            password: str = json_data["password"]
-        except Exception as e:
-            LOGGER.error(
-                "Can not parse login request, %s error: %s",
-                request.body.decode("utf-8"),
-                e,
-            )
-            return JsonResponse(data={"error": "Invalid JSON data"}, status=400)
-        # Try to validate user
-        user = authenticate(request, username=username, password=password)
-        if not user:
-            LOGGER.debug("Login failed username=%s", username)
-            return JsonResponse(
-                {"error": "Invalid authentification attempt"}, status=401
-            )
 
-        login(request, user)
-        return JsonResponse({"success": ""})
+    # Get user credentials
+    try:
+        json_data: dict = json.loads(request.body.decode("utf-8"))
+        username: str = json_data["username"]
+        password: str = json_data["password"]
+    except Exception as e:
+        LOGGER.error(
+            "Can not parse login request, %s error: %s",
+            request.body.decode("utf-8"),
+            e,
+        )
+        return JsonResponse(data={"error": "Invalid JSON data"}, status=400)
+    # Try to validate user
+    user = authenticate(request, username=username, password=password)
+    if not user:
+        LOGGER.debug("Login failed username=%s", username)
+        return JsonResponse({"error": "Invalid authentification attempt"}, status=401)
 
-    LOGGER.error("Got invalid login request method: %s", request.method)
-    return JsonResponse({"error": "Invalid request method"}, status=405)
+    login(request, user)
+    LOGGER.debug("Successfully log in user: %s", request.user)
+    return JsonResponse({"success": "Successfully login"})
 
 
-@csrf_exempt
+@require_POST
 def signin_user(request) -> JsonResponse:
     """
     Sign in a user
     """
-    if request.method == "POST":
-        # Get user credentials
-        try:
-            json_data = json.loads(request.body.decode("utf-8"))
-            username = json_data["username"]
-            password = json_data["password"]
-            LOGGER.debug("User: %s, Password: %s", username, password)
-        except Exception as e:
-            LOGGER.error(
-                "Can not parse signin request, %s, error:%s",
-                request.body.decode("utf-8"),
-                e,
-            )
-            return JsonResponse({"error": "Invalid JSON data"}, status=400)
-        # Add new user to the database
-        # TODO sanitation and validation pydantic https://stackoverflow.com/questions/16861/sanitising-user-input-using-python
-        try:
-            new_user = User.objects.create_user(username=username, password=password)
-            login(request, new_user)
-            LOGGER.debug("Create new user: %s", username)
-            return JsonResponse({"success": new_user.username})
-        except Exception as e:
-            LOGGER.error("Can not create new user: %s", e)
-            return JsonResponse({"error": "Invalid user credentials"}, status=400)
 
-    LOGGER.error("Got invalid signin request method: %s", request.method)
-    return JsonResponse({"error": "Invalid request method"}, status=405)
+    # Get user credentials
+    try:
+        json_data = json.loads(request.body.decode("utf-8"))
+        username = json_data["username"]
+        password = json_data["password"]
+        LOGGER.debug("Sign in User: %s, Password: %s", username, password)
+
+    except Exception as e:
+        LOGGER.error(
+            "Can not parse signin request, %s, error:%s",
+            request.body.decode("utf-8"),
+            e,
+        )
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    # Add new user to the database
+    # TODO sanitation and validation pydantic https://stackoverflow.com/questions/16861/sanitising-user-input-using-python
+    try:
+        new_user = User.objects.create_user(username=username, password=password)
+        login(request, new_user)
+        LOGGER.debug("Create new user: %s", username)
+        return JsonResponse({"success": f"Create new user: {new_user.username}"})
+    except Exception as e:
+        LOGGER.error("Can not create new user: %s", e)
+        return JsonResponse({"error": "Invalid user credentials"}, status=400)
 
 
 @ensure_csrf_cookie
-def csrf_token(request) -> JsonResponse:
+def get_csrf_token(request) -> JsonResponse:
     """
     Return CSRF token as cookie
     """
-    return JsonResponse({"success": ""})
+    LOGGER.debug("Send csrf token in cookies")
+    return JsonResponse({"success": "Send CSRF token"})
+
+
+@require_GET
+def logout_user(request) -> JsonResponse:
+    """
+    Logout user
+    """
+    if not request.user.is_authenticated:
+        LOGGER.debug("Anauthorization attempt to logout. uesr: %s", request.user)
+        return JsonResponse({"error": "You are not logged in"}, status=400)
+
+    LOGGER.debug("Successfully logout user: %s", request.user)
+    logout(request)
+
+    return JsonResponse({"success": "Successfully logged out"})
+
+
+@require_GET
+def whoami(request) -> JsonResponse:
+    """
+    Return if user is authenticated
+    """
+    # TODO remove in prodaction
+    LOGGER.debug(
+        f"Cookies: {request.COOKIES} username: {request.user.username} id: {request.user.id}"
+    )
+
+    if request.user.is_authenticated:
+        return JsonResponse({"status": "auth", "username": f"{request.user}"})
+    return JsonResponse({"status": "not_auth"})
