@@ -1,4 +1,5 @@
 import * as api from './api.js'
+import * as navBar from './nav_bar.js'
 
 let asanaSignedIn = false
 
@@ -30,14 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
       if (username !== 0 && username !== -1) { // If user is already signed in
         console.log('User is already signed in as ' + username)
         // Change nav bar
-        const navUsername = document.querySelector('#navUserName')
-        navUsername.innerHTML = username
-        navUsername.style.display = 'block'
-
-        document.querySelector('#navLoginLink').style.display = 'none'
-        document.querySelector('#navLogoutLink').style.display = 'block'
-
-        document.querySelector('#navDetails').classList.remove('disabled')
+        navBar.userState(username)
+      } else {
+        navBar.anonimousState()
       }
     })
 
@@ -67,13 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const reslult = await api.logout()
     if (reslult !== -1) {
       // Change DOM nav menu
-      const navUsername = document.querySelector('#navUserName')
-      navUsername.style.display = 'none'
-
-      document.querySelector('#navLoginLink').style.display = 'block'
-      document.querySelector('#navLogoutLink').style.display = 'none'
-
-      document.querySelector('#navDetails').classList.add('disabled')
+      navBar.anonimousState()
     } else {
       alert('Can not logout. Please connect to site administrator.')
     }
@@ -83,7 +73,11 @@ document.addEventListener('DOMContentLoaded', function () {
     loginOffcanvas.hide()
     signinOffcanvas.show()
   })
-
+  // Return to Login from Signin view
+  document.querySelector('#backToLoginPage').addEventListener('click', () => {
+    signinOffcanvas.hide()
+    loginOffcanvas.show()
+  })
   // Show - Hide passwords in input fields
   const showPasswordButtons = document.querySelectorAll('.showPasswordButton')
   showPasswordButtons.forEach(element => {
@@ -111,14 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         asanaSignedIn = true // Global variable
       }
       // Change nav bar
-      const navUsername = document.querySelector('#navUserName')
-      navUsername.innerHTML = formData.get('username')
-      navUsername.style.display = 'block'
-
-      document.querySelector('#navLoginLink').style.display = 'none'
-      document.querySelector('#navLogoutLink').style.display = 'block'
-
-      document.querySelector('#navDetails').classList.remove('disabled')
+      navBar.userState(formData.get('username'))
       signinOffcanvas.hide()
     } else {
       alert('Can not sign in. Try to connect with site administrator')
@@ -138,14 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (result !== -1) {
       // Change nav bar
-      const navUsername = document.querySelector('#navUserName')
-      navUsername.innerHTML = formData.get('username')
-      navUsername.style.display = 'block'
-
-      document.querySelector('#navLoginLink').style.display = 'none'
-      document.querySelector('#navLogoutLink').style.display = 'block'
-
-      document.querySelector('#navDetails').classList.remove('disabled')
+      navBar.userState(formData.get('username'))
       loginOffcanvas.hide()
     } else {
       alert('Can not log in. Try to connect with site administrator')

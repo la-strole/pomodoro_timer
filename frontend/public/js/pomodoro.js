@@ -118,10 +118,6 @@ function addTreeToGarden () {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Nav bar
-  document.querySelector('#navUserName').style.display = 'none'
-  document.querySelector('#navLogoutLink').style.display = 'none'
-
   // Instantiate a Bootstrap offcanvas components.
   const myOffcanvas = document.querySelector('#myOffcanvas')
   // eslint-disable-next-line no-undef
