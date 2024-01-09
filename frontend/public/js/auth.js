@@ -1,5 +1,128 @@
 import * as api from './api.js'
-import * as navBar from './nav_bar.js'
+
+const navBar = {
+  loginLink: document.querySelector('#navLoginLink'),
+  logoutLink: document.querySelector('#navLogoutLink'),
+  detailsLink: document.querySelector('#navDetails'),
+  username: document.querySelector('#navUserName'),
+
+  showLoginLink: function () {
+    this.loginLink.style.display = 'block'
+  },
+
+  hideLoginLink: function () {
+    this.loginLink.style.display = 'none'
+  },
+
+  showLogoutLink: function () {
+    this.logoutLink.style.display = 'block'
+  },
+
+  hideLogoutLink: function () {
+    this.logoutLink.style.display = 'none'
+  },
+
+  showDetailsLink: function () {
+    this.detailsLink.classList.remove('disabled')
+  },
+
+  hideDetailsLink: function () {
+    this.detailsLink.classList.add('disabled')
+  },
+
+  setUsername: function (username) {
+    this.username.innerHTML = username
+  },
+
+  clearUsername: function () {
+    this.username.innerHTML = ''
+  }
+}
+
+const asanaDomElements = {
+  asanaDropdownButton: document.querySelector('#asana_task_dropdown'),
+  asanaTasksNumberBadge: document.querySelector('#asana_task_number'),
+  asanaList: document.querySelector('#asana_tasks_list'),
+  taskName_tag: document.querySelector('#taskNameHeader'),
+
+  addAsanaTaskToList: function (number, taskGid, taskName) {
+    const rowNumber = document.createElement('td')
+    rowNumber.innerHTML = number
+    const taskListItem = document.createElement('td')
+    taskListItem.classList.add('task-item')
+    taskListItem.dataset.id = taskGid
+    taskListItem.innerHTML = taskName
+    const listItem = document.createElement('tr')
+    listItem.classList.add('row-task')
+    listItem.dataset.id = taskGid
+
+    listItem.appendChild(rowNumber)
+    listItem.appendChild(taskListItem)
+    this.asanaList.appendChild(listItem)
+  },
+
+  clearAsanaTaskList: function () {
+    this.asanaList.innerHTML = ''
+  },
+
+  showAsanaDropdownButton: function () {
+    this.asanaDropdownButton.style.display = 'inline'
+  },
+
+  hideAsanaDropdownButton: function () {
+    this.asanaDropdownButton.style.display = 'none'
+  },
+
+  changeAsanaTaskNumber: function (taskNumber) {
+    this.asanaTasksNumberBadge.innerHTML = taskNumber
+  }
+
+}
+
+function anonimousState () {
+  // Set the state of navbar and asana elements as anonimous state
+  navBar.showLoginLink()
+  navBar.hideLogoutLink()
+  navBar.hideDetailsLink()
+  navBar.clearUsername()
+  asanaDomElements.clearAsanaTaskList()
+  asanaDomElements.hideAsanaDropdownButton()
+  asanaDomElements.changeAsanaTaskNumber('')
+  asanaDomElements.taskName_tag.innerHTML = ''
+  asanaDomElements.taskName_tag.dataset.id = ''
+}
+
+function userState (username, asanaTasksList) {
+  // Set navbar and asana DOM elements as user state
+  // username - the username
+  // asanaTasksList - the list of objects task.gid, task.name
+  navBar.hideLoginLink()
+  navBar.showLogoutLink()
+  navBar.setUsername(username)
+  navBar.showDetailsLink()
+  if (asanaTasksList.length !== 0) {
+    asanaDomElements.showAsanaDropdownButton()
+    asanaDomElements.changeAsanaTaskNumber(asanaTasksList.length)
+    asanaDomElements.addAsanaTaskToList(0, 'null', '--------')
+    for (let i = 0; i < asanaTasksList.length; i++) {
+      asanaDomElements.addAsanaTaskToList(i + 1, asanaTasksList[i].gid, asanaTasksList[i].name)
+    }
+    // Add event listeners for asana tasks list buttons
+    const asanaTasks = document.querySelectorAll('.row-task')
+    asanaTasks.forEach(rowtask => {
+      rowtask.addEventListener('click', () => {
+        const taskData = rowtask.querySelector('.task-item')
+        if (taskData.dataset.id !== 'null') {
+          asanaDomElements.taskName_tag.innerHTML = taskData.innerHTML
+          asanaDomElements.taskName_tag.dataset.id = taskData.dataset.id
+        } else {
+          asanaDomElements.taskName_tag.innerHTML = ''
+          asanaDomElements.taskName_tag.dataset.id = ''
+        }
+      })
+    })
+  } else console.log('dom_manipulation.userState(): asanaTasksList length === 0')
+}
 
 function changePasswordVisability (passwordInputElement) {
   // Change password visibility for DOM input passwords
@@ -23,19 +146,25 @@ function changePasswordVisability (passwordInputElement) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Check if user is already signed in
+  // Pipeline for display DOM elements
+
+  // 1. Check if user is already signed in
   api.isAuthenificated()
     .then((username) => {
       if (username !== 0 && username !== -1) { // If user is already signed in
         console.log('User is already signed in as ' + username)
-        // Change nav bar
-        navBar.userState(username)
+        // Get Asana tasks
+        api.getAsanaTasksforUser()
+          .then((tasks) => {
+            // Change DOM
+            userState(username, tasks)
+          })
       } else {
-        navBar.anonimousState()
+        anonimousState()
       }
     })
 
-  // Set offcanvas for login and signin forms
+  // 2. Set offcanvas for login and signin forms
   const offacnvasLogin = document.querySelector('#offcanvasLogin')
   const offcanvasSignin = document.querySelector('#offcanvasSignIn')
   // eslint-disable-next-line no-undef
@@ -49,34 +178,35 @@ document.addEventListener('DOMContentLoaded', function () {
   signinOffcanvas.keyboard = false
   signinOffcanvas.scroll = false
 
-  // Nav Bar functionality
-  // Login link
+  // 3. Set Nav Bar and main page's auth elements functionality
+  // 3.1 Login link
   document.querySelector('#navLoginLink').addEventListener('click', () => {
     // Show Login offcanvas
     loginOffcanvas.show()
   })
-  // Logout Link
+  // 3.2 Logout Link
   document.querySelector('#navLogoutLink').addEventListener('click', async function () {
     // Logout user on server with API
     const reslult = await api.logout()
     if (reslult !== -1) {
       // Change DOM nav menu
-      navBar.anonimousState()
+      anonimousState()
+      alert('Logged out successfully')
     } else {
       alert('Can not logout. Please connect to site administrator.')
     }
   })
-  // Signin link functionality
+  // 3.3 Signin link functionality
   document.querySelector('#signInLink').addEventListener('click', () => {
     loginOffcanvas.hide()
     signinOffcanvas.show()
   })
-  // Return to Login from Signin view
+  // 3.4 Return to Login from Signin view
   document.querySelector('#backToLoginPage').addEventListener('click', () => {
     signinOffcanvas.hide()
     loginOffcanvas.show()
   })
-  // Show - Hide passwords in input fields
+  // 3.5 Show - Hide passwords in input fields
   const showPasswordButtons = document.querySelectorAll('.showPasswordButton')
   showPasswordButtons.forEach(element => {
     element.addEventListener('click', function () {
@@ -85,45 +215,52 @@ document.addEventListener('DOMContentLoaded', function () {
     })
   })
 
-  // Sigin functionality. Sign in new user and make DOM changes
+  // 4. Sigin functionality. Sign in new user and make DOM changes
   document.querySelector('#signInForm').addEventListener('submit', async function (event) {
-    event.preventDefault() // Prevent the default form submission behavior
+    // 4.1 Prevent the default form submission behavior
+    event.preventDefault()
 
-    // Get user credentials
+    // 4.2 Get user credentials
     const formData = new FormData(this) // Create a FormData object from the form
     const authJsonData = { username: formData.get('username'), password: formData.get('password') }
     const asanaPatData = { api_key: formData.get('asanaAPI') }
-    // Sign in new user on the server
-    const result = await api.signin(authJsonData)
 
+    // 4.3 Sign in new user on the backend server
+    const result = await api.signin(authJsonData)
     if (result !== -1) {
       // Send Asana PAT to the server
       const asanaResponse = await api.setAsanaToken(asanaPatData)
       if (asanaResponse === 0) {
         console.log('Successfully sent Asana PAT')
-      }
-      // Change nav bar
-      navBar.userState(formData.get('username'))
+        // 4.4 Change Dom with Asana tasks
+        // Get asana tasks
+        const asanaTasks = await api.getAsanaTasks(formData.get('asanaAPI'))
+        userState(formData.get('username'), asanaTasks)
+      } else { userState(formData.get('username'), []) } // Change DOM without asana tasks
       signinOffcanvas.hide()
     } else {
       alert('Can not sign in. Try to connect with site administrator')
     }
   })
 
-  // Login functionality. Login user and make DOM changes
+  // 5. Login functionality. Login user and make DOM changes
   document.querySelector('#logInForm').addEventListener('submit', async function (event) {
-    event.preventDefault() // Prevent the default form submission behavior
+    // 5.1 Prevent the default form submission behavior
+    event.preventDefault()
 
-    // Get user credentials
+    // 5.2 Get user credentials
     const formData = new FormData(this) // Create a FormData object from the form
     const jsonData = { username: formData.get('username'), password: formData.get('password') }
 
-    // Log in user on the server
+    // 5.3 Log in user on the backend server
     const result = await api.login(jsonData)
 
     if (result !== -1) {
-      // Change nav bar
-      navBar.userState(formData.get('username'))
+      // 5.4 Get Asana tasks
+      const tasks = await api.getAsanaTasksforUser()
+      console.log(`tasks from login auth.js: ${tasks}`)
+      // 5.5 Change DOM
+      userState(formData.get('username'), tasks)
       loginOffcanvas.hide()
     } else {
       alert('Can not log in. Try to connect with site administrator')

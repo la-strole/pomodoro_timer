@@ -1,7 +1,8 @@
 // eslint-disable-next-line no-use-before-define
 export {
-  login, signin, logout, getCsrfToken,
-  isAuthenificated, setAsanaToken, getAsanaToken, getAsanaTasks, BASE_URL
+  login, signin, logout,
+  getCsrfToken, isAuthenificated,
+  setAsanaToken, getAsanaToken, getAsanaTasks, getAsanaTasksforUser, BASE_URL
 }
 
 // Set the real path in production
@@ -202,7 +203,7 @@ async function getAsanaUserWorkspaces (token) {
     const response = await fetch(url, {
       headers: {
         accept: 'application/json',
-        authorization: 'Bearer ' + token
+        Authorization: 'Bearer ' + token
       }
     })
     if (!response.ok) {
@@ -225,7 +226,7 @@ async function getAsanaUserTaskList (token, workspaceId) {
     const response = await fetch(url, {
       headers: {
         accept: 'application/json',
-        authorization: 'Bearer ' + token
+        Authorization: 'Bearer ' + token
       }
     })
     if (!response.ok) {
@@ -248,7 +249,7 @@ async function getAsanaTasksFromTasklist (token, userTaskListGid) {
     const response = await fetch(url, {
       headers: {
         accept: 'application/json',
-        authorization: 'Bearer ' + token
+        Authorization: 'Bearer ' + token
       }
     })
     if (!response.ok) {
@@ -264,13 +265,14 @@ async function getAsanaTasksFromTasklist (token, userTaskListGid) {
 }
 
 async function getAsanaTasks (token) {
-  // Retrurn tasks from users PAT
-  // [{workspaceName: 'workspace_name', workspaceTasks: [{gid: 'task_gid', name: 'task_name'}, ... ]}, ...]
-  const result = []
+  // Retrurn tasks from asana with user's PAT
+  // [{gid: 'task_gid', name: 'task_name'}, ...]
   // Get users workspaces (list of workspaces)
   const workspaces = await getAsanaUserWorkspaces(token)
+  console.log(`workspaces: ${workspaces}`)
   if (workspaces !== -1) { // If no errors
-    workspaces.forEach(async (workspace) => {
+    const result = []
+    for (const workspace of workspaces) {
       // Get users task lists
       const taskLists = await getAsanaUserTaskList(token, workspace.gid)
       if (taskLists !== -1) { // If no errors
@@ -278,15 +280,29 @@ async function getAsanaTasks (token) {
         const tasksData = await getAsanaTasksFromTasklist(token, taskLists.data.gid)
         if (tasksData !== -1) { // If no errors
           // Add tasks to returned result
-          const tasks = []
+          // const tasks = []
           tasksData.data.forEach((task) => {
-            tasks.push({ gid: task.gid, name: task.name })
+            // tasks.push({ gid: task.gid, name: task.name })
+            result.push({ gid: task.gid, name: task.name })
           })
-          result.push({ workspaceName: workspace.name, workspaceTasks: tasks })
+          // result.push({ workspaceName: workspace.name, workspaceTasks: tasks })
         }
       }
-    })
+    }
+    console.log(`rsult from get asana tasks = ${result}`)
     return result
   }
   return -1
+}
+
+async function getAsanaTasksforUser () {
+  // Get Asana PAT for user and get tasks from asana API
+  // Get PAT from server
+  const token = await getAsanaToken()
+  if (token === -1) return -1
+  // Get tasks from asana API
+  const tasks = await getAsanaTasks(token)
+  console.log(`tasks from getasanataskforuser: ${tasks}`)
+  if (tasks === -1) return -1
+  return tasks
 }

@@ -1,0 +1,31 @@
+Table Tasks {
+    gid CharField(128) [primary key, note:'Task ID']
+    name CharField(128) [note: 'Task name', not null]
+    complited BooleanField [note: 'Is task complited', not null, default: false]
+    created_at DateTimeField [note: 'Created at', not null]
+}
+
+Table AsanaApiKey {
+    id UUIDField [note: 'id', default: 'uuid.uuid4()', pk]
+    user OneToOneField [not null]
+    api_key BinaryField [note: 'Asana API Key', unique, not null]
+}
+
+Table User {
+  id int [pk]
+  username string(150)
+  password hash
+}
+
+Table PomoRecords {
+    id UUIDField [pk, default: 'uuid.uuid4()']
+    user ForeignKey [not null]
+    task ForeignKey [default: null]
+    date DateTimeField [default: 'auto_now=True']
+    time_spent PositiveIntegerField [note: 'spent time', not null]
+    is_full_pomo BooleanField [note: 'Is pomodoro full', not null, default: True]
+    pomo_in_row_count PositiveIntegerField [note: 'pomodoro in row current count', not null, default: 0]
+}
+Ref: AsanaApiKey.user - User.id [delete: cascade]
+Ref: PomoRecords.user - User.id [delete: cascade]
+Ref: PomoRecords.task - Tasks.gid [delete: set null]

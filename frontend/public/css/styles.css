@@ -52,3 +52,7 @@
   cursor: pointer;
   color: #0d6efd;
 }
+
+.task-item {
+  cursor: pointer;
+}
