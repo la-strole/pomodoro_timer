@@ -1,16 +1,141 @@
 import * as helpers from './helpers.js'
 import * as timer from './timer.js'
-export { t }
+import * as api from './api.js'
 
 class MyTimer extends timer.TimerClass {
   change_display = runningTimerDisplays
   play_sound = helpers.playSound
   add_tree = addTreeToGarden
+  task_history = []
+  add_task_to_history (taskID) {
+    const currentTime = new Date()
+    this.task_history.push({ taskId: taskID, time: currentTime })
+  }
 }
+
 const t = new MyTimer()
-// Time step in seconds to  grow the tree
+
+// Time step in seconds to grow the tree.
 let timeStep
-let currentDisplay = '' // 'pomo' or 'break'
+let currentDisplay = '' // 'pomo' or 'break'.
+// Determine whether the user is authenticated.
+let isAuthenticated = false
+
+const navBar = {
+  loginLink: document.querySelector('#navLoginLink'),
+  logoutLink: document.querySelector('#navLogoutLink'),
+  detailsLink: document.querySelector('#navDetails'),
+  username: document.querySelector('#navUserName'),
+
+  showLoginLink: function () {
+    this.loginLink.style.display = 'block'
+  },
+
+  hideLoginLink: function () {
+    this.loginLink.style.display = 'none'
+  },
+
+  showLogoutLink: function () {
+    this.logoutLink.style.display = 'block'
+  },
+
+  hideLogoutLink: function () {
+    this.logoutLink.style.display = 'none'
+  },
+
+  showDetailsLink: function () {
+    this.detailsLink.classList.remove('disabled')
+  },
+
+  hideDetailsLink: function () {
+    this.detailsLink.classList.add('disabled')
+  },
+
+  setUsername: function (username) {
+    this.username.innerHTML = username
+  },
+
+  clearUsername: function () {
+    this.username.innerHTML = ''
+  }
+}
+
+const asanaDomElements = {
+  asanaDropdownButton: document.querySelector('#asana_task_dropdown'),
+  asanaTasksNumberBadge: document.querySelector('#asana_task_number'),
+  asanaList: document.querySelector('#asana_tasks_list'),
+  taskName_tag: document.querySelector('#taskNameHeader'),
+  taskNameCompleteButton: document.querySelector('#taskCompleteButton'),
+
+  addAsanaTaskToList: function (number, taskGid, taskName) {
+    const rowNumber = document.createElement('td')
+    rowNumber.innerHTML = number
+    const taskListItem = document.createElement('td')
+    taskListItem.classList.add('task-item')
+    taskListItem.dataset.id = taskGid
+    taskListItem.innerHTML = taskName
+    const listItem = document.createElement('tr')
+    listItem.classList.add('row-task')
+    listItem.dataset.id = taskGid
+
+    listItem.appendChild(rowNumber)
+    listItem.appendChild(taskListItem)
+    this.asanaList.appendChild(listItem)
+  },
+
+  clearAsanaTaskList: function () {
+    this.asanaList.innerHTML = ''
+  },
+
+  showAsanaDropdownButton: function () {
+    this.asanaDropdownButton.style.display = 'inline'
+  },
+
+  hideAsanaDropdownButton: function () {
+    this.asanaDropdownButton.style.display = 'none'
+  },
+
+  changeAsanaTaskNumber: function (taskNumber) {
+    this.asanaTasksNumberBadge.innerHTML = taskNumber
+  },
+
+  showtaskTag: function (taskId, taskName) {
+    this.taskName_tag.innerHTML = taskName
+    this.taskName_tag.dataset.id = taskId
+    this.taskNameCompleteButton.style.display = 'inline-block'
+  },
+
+  hideTaskTag: function () {
+    this.taskName_tag.innerHTML = ''
+    this.taskName_tag.dataset.id = ''
+    this.taskNameCompleteButton.style.display = 'none'
+  },
+
+  updateTasksListDropdownMenu: function (asanaTasksList) {
+    asanaDomElements.showAsanaDropdownButton()
+    asanaDomElements.changeAsanaTaskNumber(asanaTasksList.length)
+    // Empty the dropdown tasks list.
+    asanaDomElements.asanaList.innerHTML = ''
+    // Include the initial empty task.
+    asanaDomElements.addAsanaTaskToList(0, 'null', '--------')
+    // Incorporate tasks from the Asana server.
+    for (let i = 0; i < asanaTasksList.length; i++) {
+      asanaDomElements.addAsanaTaskToList(i + 1, asanaTasksList[i].gid, asanaTasksList[i].name)
+    }
+    // Attach event listeners for the dropdown Asana tasks.
+    const asanaTasks = document.querySelectorAll('.row-task')
+    asanaTasks.forEach(rowtask => {
+      rowtask.addEventListener('click', () => {
+        const taskData = rowtask.querySelector('.task-item')
+        if (taskData.dataset.id !== 'null') {
+          asanaDomElements.showtaskTag(taskData.dataset.id, taskData.innerHTML)
+        } else {
+          asanaDomElements.hideTaskTag()
+        }
+      })
+    })
+  }
+}
 
 const displayElements = {
   minute_tag: document.querySelector('#minute'),
@@ -19,8 +144,7 @@ const displayElements = {
   breaking_image_tag: document.querySelector('#breaking_time'),
   pause_button_tag: document.querySelector('#btn_pause'),
   stop_button_tag: document.querySelector('#btn_stop'),
-  pomo_in_row_count_tag: document.querySelector('#row_pomo_number'),
-  pomo_row_card: document.querySelector('#row_pomo_card')
+  pomo_in_row_count_tag: document.querySelector('#row_pomo_number')
 }
 
 function runningTimerDisplays () {
@@ -116,8 +240,65 @@ function addTreeToGarden () {
   console.log('Add tree to the garden')
 }
 
+function anonimousState () {
+  // Retrieve the state of the navbar and Asana elements as anonymous state.
+  isAuthenticated = false
+  navBar.showLoginLink()
+  navBar.hideLogoutLink()
+  navBar.hideDetailsLink()
+  navBar.clearUsername()
+  asanaDomElements.clearAsanaTaskList()
+  asanaDomElements.hideAsanaDropdownButton()
+  asanaDomElements.changeAsanaTaskNumber('')
+  asanaDomElements.hideTaskTag()
+}
+
+function userState (username, asanaTasksList) {
+  // Establish the navbar and Asana DOM elements as user state.
+  // username - the username
+  // asanaTasksList - a list containing objects with properties task.gid and task.name.
+  isAuthenticated = true
+  navBar.hideLoginLink()
+  navBar.showLogoutLink()
+  navBar.setUsername(username)
+  navBar.showDetailsLink()
+  if (asanaTasksList.length !== 0) {
+    // Incorporate Asana tasks into the dropdown list of tasks.
+    asanaDomElements.updateTasksListDropdownMenu(asanaTasksList)
+  } else console.log('dom_manipulation.userState(): asanaTasksList length === 0')
+}
+
+async function completeTaskButtonClick () {
+  console.log('task complete')
+  // If the "Complete Task" button is clicked while the timer is paused or during running time, add the task time to the list.
+  if (t.timer_control.pause_flag || (t.timer_control.breaking_flag && !t.timer_control.stop_flag)) {
+    const currentTime = new Date()
+    t.task_history.push({ task_id: asanaDomElements.taskName_tag.dataset.id, time: currentTime })
+  }
+  // 1 Send information to the Asana server.
+  const taskGID = asanaDomElements.taskName_tag.dataset.id
+  const taskName = asanaDomElements.taskName_tag.innerHTML
+  await api.markTaskComplitedAsanaServer(taskGID)
+  // 2 Transmit information to the backend server.
+  await api.markTaskComplitedBackend(taskGID, taskName)
+  // 3 Refresh/update the task list.
+  // 3.1 Retrieve Asana tasks.
+  const tasks = await api.getAsanaTasksforUser()
+  console.log('tasks updated')
+  // 3.2 Modify the DOM.
+  asanaDomElements.updateTasksListDropdownMenu(tasks)
+  // 4 Display the task table for reviewing new tasks.
+  asanaDomElements.hideTaskTag()
+  const taskMenuButton = document.querySelector('#asana_task_dropdown')
+  console.log(taskMenuButton)
+  // eslint-disable-next-line no-undef
+  const dropDownTasks = new bootstrap.Dropdown(taskMenuButton)
+  console.log(dropDownTasks)
+  dropDownTasks.toggle()
+}
+
 document.addEventListener('DOMContentLoaded', function () {
-  // Instantiate a Bootstrap offcanvas components.
+  // Create a Bootstrap offcanvas component for timer settings.
   const myOffcanvas = document.querySelector('#myOffcanvas')
   // eslint-disable-next-line no-undef
   const settingsOffcanvas = new bootstrap.Offcanvas(myOffcanvas)
@@ -137,11 +318,7 @@ document.addEventListener('DOMContentLoaded', function () {
     t.timer_init.lb_m = parseInt(formData.get('lbr_set_minutes'))
     t.timer_init.b_after = parseInt(formData.get('lbr_after'))
     const swichState = document.getElementById('breaks')
-    t.timer_init.pomo_session = !!swichState.checked
-    // Remove the Pomodoro in-line section if it's being used as a timer.
-    if (!t.timer_init.pomo_session) {
-      displayElements.pomo_row_card.style.display = 'none'
-    }
+    t.timer_init.pomo_session = swichState.checked
     timeStep = Math.floor((t.timer_init.m * 60) / 25)
     console.log('Settings updated')
     settingsOffcanvas.hide()
@@ -150,7 +327,132 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('Offcanvas confirmed')
   })
 
-  // Incorporate event listeners.
+  // 1. Verify whether the user is already signed in.
+  api.isAuthenificated()
+    .then((username) => {
+      if (username !== 0 && username !== -1) { // If the user is already signed in
+        console.log('User is already signed in as ' + username)
+        // Retrieve Asana tasks.
+        api.getAsanaTasksforUser()
+          .then((tasks) => {
+            // Modify the DOM.
+            userState(username, tasks)
+          })
+      } else {
+        anonimousState()
+      }
+    })
+
+  // 2. Configure the offcanvas for login and sign-in forms.
+  const offacnvasLogin = document.querySelector('#offcanvasLogin')
+  const offcanvasSignin = document.querySelector('#offcanvasSignIn')
+  // eslint-disable-next-line no-undef
+  const loginOffcanvas = new bootstrap.Offcanvas(offacnvasLogin)
+  // eslint-disable-next-line no-undef
+  const signinOffcanvas = new bootstrap.Offcanvas(offcanvasSignin)
+  loginOffcanvas.backdrop = false
+  loginOffcanvas.keyboard = false
+  loginOffcanvas.scroll = false
+  signinOffcanvas.backdrop = false
+  signinOffcanvas.keyboard = false
+  signinOffcanvas.scroll = false
+
+  // 3. Establish functionality for the Navbar and authentication elements on the main page.
+  // 3.1 Login link
+  document.querySelector('#navLoginLink').addEventListener('click', () => {
+    // Display the Login offcanvas.
+    loginOffcanvas.show()
+  })
+  // 3.2 Logout Link
+  document.querySelector('#navLogoutLink').addEventListener('click', async function () {
+    // Log out the user on the server using the API.
+    const reslult = await api.logout()
+    if (reslult !== -1) {
+      // Modify the DOM nav menu.
+      anonimousState()
+      alert('Logged out successfully')
+    } else {
+      alert('Can not logout. Please connect to site administrator.')
+    }
+  })
+  // 3.3 Implement functionality for the sign-in link.
+  document.querySelector('#signInLink').addEventListener('click', () => {
+    loginOffcanvas.hide()
+    signinOffcanvas.show()
+  })
+  // 3.4 Provide the option to return to the Login view from the Sign-in view.
+  document.querySelector('#backToLoginPage').addEventListener('click', () => {
+    signinOffcanvas.hide()
+    loginOffcanvas.show()
+  })
+  // 3.5 Toggle the visibility of passwords in input fields.
+  const showPasswordButtons = document.querySelectorAll('.showPasswordButton')
+  showPasswordButtons.forEach(element => {
+    element.addEventListener('click', function () {
+      const passwordInput = this.parentElement.querySelector('input')
+      helpers.changePasswordVisability(passwordInput)
+    })
+  })
+
+  // 4. Implement the Sign-in functionality, sign in a new user, and update the DOM accordingly.
+  document.querySelector('#signInForm').addEventListener('submit', async function (event) {
+    // 4.1 Prevent the default form submission behavior
+    event.preventDefault()
+
+    // 4.2 Retrieve user credentials.
+    const formData = new FormData(this) // Create a FormData object from the form
+    const authJsonData = { username: formData.get('username'), password: formData.get('password') }
+    const asanaPatData = { api_key: formData.get('asanaAPI') }
+
+    // 4.3 Authenticate and sign in a new user on the backend server.
+    const result = await api.signin(authJsonData)
+    if (result !== -1) {
+      // Transmit the Asana Personal Access Token (PAT) to the server.
+      const asanaResponse = await api.setAsanaToken(asanaPatData)
+      if (asanaResponse === 0) {
+        console.log('Successfully sent Asana PAT')
+        // 4.4 Update the DOM with Asana tasks.
+        // Retrieve Asana tasks.
+        const asanaTasks = await api.getAsanaTasks(formData.get('asanaAPI'))
+        userState(formData.get('username'), asanaTasks)
+      } else { userState(formData.get('username'), []) } // Update the DOM without including Asana tasks.
+      signinOffcanvas.hide()
+    } else {
+      alert('Can not sign in. Try to connect with site administrator')
+    }
+  })
+
+  // 5. Implement the login functionality, log in the user, and update the DOM accordingly.
+  document.querySelector('#logInForm').addEventListener('submit', async function (event) {
+    // 5.1 Prevent the default form submission behavior
+    event.preventDefault()
+
+    // 5.2 Retrieve user credentials.
+    const formData = new FormData(this) // Create a FormData object from the form
+    const jsonData = { username: formData.get('username'), password: formData.get('password') }
+
+    // 5.3 Authenticate and log in the user on the backend server.
+    const result = await api.login(jsonData)
+
+    if (result !== -1) {
+      // 5.4 Retrieve Asana tasks.
+      const tasks = await api.getAsanaTasksforUser()
+      console.log(`tasks from login auth.js: ${tasks}`)
+      // 5.5 Modify the DOM.
+      userState(formData.get('username'), tasks)
+      loginOffcanvas.hide()
+    } else {
+      alert('Can not log in. Try to connect with site administrator')
+    }
+  })
+
+  // 6. Conceal the current task tag.
+  asanaDomElements.hideTaskTag()
+
+  // 7. Establish the functionality for the task completion button.
+  asanaDomElements.taskNameCompleteButton.addEventListener('click', completeTaskButtonClick)
+
+  // Incorporate timer event listeners.
   // Start button functionality.
   displayElements.stop_button_tag.addEventListener('click', () => {
     // If the button is the start button.

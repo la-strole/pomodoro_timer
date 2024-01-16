@@ -2,6 +2,7 @@
 export {
   login, signin, logout,
   getCsrfToken, isAuthenificated,
+  // eslint-disable-next-line no-use-before-define
   setAsanaToken, getAsanaToken, getAsanaTasks, getAsanaTasksforUser, BASE_URL,
   markTaskComplitedAsanaServer, markTaskComplitedBackend, sendPomoRecord
 }

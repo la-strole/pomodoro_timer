@@ -165,6 +165,7 @@ def set_task_complited(request) -> JsonResponse:
                 LOGGER.debug("Successfully set task %s as completed", task.name)
             else:
                 task_record = models.Tasks(
+                    user=request.user,
                     gid=json_data["task_id"],
                     name=json_data["task_name"],
                     complited=True,

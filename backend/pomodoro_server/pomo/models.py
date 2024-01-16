@@ -29,6 +29,14 @@ class Tasks(models.Model):
         default=False,
     )
 
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="task",
+        related_query_name="task",
+        blank=False,
+    )
+
     def __str__(self) -> str:
         return str(self.name)
 
