@@ -2,7 +2,6 @@ Table Tasks {
     gid CharField(128) [primary key, note:'Task ID']
     name CharField(128) [note: 'Task name', not null]
     complited BooleanField [note: 'Is task complited', not null, default: false]
-    created_at DateTimeField [note: 'Created at', not null]
 }
 
 Table AsanaApiKey {

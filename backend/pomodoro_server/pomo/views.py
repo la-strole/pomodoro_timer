@@ -91,16 +91,12 @@ def get_pomo_record(request) -> JsonResponse:
             try:
                 task = models.Tasks.objects.filter(gid=json_data["task"]["task_gid"])
                 if not task:
-                    date_format = "%Y-%m-%d %H:%M:%S"
                     task_record = models.Tasks(
                         gid=json_data["task"]["task_gid"],
                         name=json_data["task"]["task_name"],
-                        complited=(json_data["task"]["complited"] == "True"),
-                        created_at=datetime.strptime(
-                            json_data["task"]["created_at"], date_format
-                        ),
                     )
                     task_record.save()
+
             except Exception as task_error:
                 msg = f"Error with task operations. {task_error}"
                 LOGGER.error(msg)
@@ -143,13 +139,47 @@ def get_pomo_record(request) -> JsonResponse:
             if record.task:
                 json_string["task"]["name"] = record.task.name
                 json_string["task"]["complited"] = record.task.complited
-                json_string["task"]["created_at"] = record.task.created_at
             json_data.append(json_string)
         return JsonResponse(json_data, safe=False)
 
     else:
         LOGGER.error("Invalid client request method: %s", request.method)
         return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@require_POST
+def set_task_complited(request) -> JsonResponse:
+    """
+    Mark the task as completed in the database
+    """
+    try:
+        json_data: dict = json.loads(request.body.decode("utf-8"))
+        task_id = json_data.get("task_id")
+        if task_id:
+            # Get row from database
+            tasks = models.Tasks.objects.filter(gid=task_id)
+            if tasks:
+                task = tasks[0]
+                task.complited = True
+                task.save()
+                LOGGER.debug("Successfully set task %s as completed", task.name)
+            else:
+                task_record = models.Tasks(
+                    gid=json_data["task_id"],
+                    name=json_data["task_name"],
+                    complited=True,
+                )
+                task_record.save()
+                LOGGER.debug(
+                    "Successfully add task and set task %s as completed",
+                    task_record.name,
+                )
+            return JsonResponse({"success": True})
+        LOGGER.error("set_task_complited API error. No task_id in POST request.")
+        raise ValueError("Value error in request - can not load JSON with task_id")
+    except Exception as e:
+        LOGGER.debug("set_task_complited: %s", e)
+        return JsonResponse(data={"error": "Invalid request."}, status=500)
 
 
 @require_POST

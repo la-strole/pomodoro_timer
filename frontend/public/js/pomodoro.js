@@ -1,5 +1,6 @@
 import * as helpers from './helpers.js'
 import * as timer from './timer.js'
+export { t }
 
 class MyTimer extends timer.TimerClass {
   change_display = runningTimerDisplays
@@ -10,8 +11,6 @@ const t = new MyTimer()
 // Time step in seconds to  grow the tree
 let timeStep
 let currentDisplay = '' // 'pomo' or 'break'
-
-window.current_timer = t
 
 const displayElements = {
   minute_tag: document.querySelector('#minute'),

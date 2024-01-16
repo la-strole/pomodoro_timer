@@ -27,6 +27,7 @@ class TimerClass {
     }
 
     this.timer_history = []
+    this.task_history = []
   }
 
   timer () {

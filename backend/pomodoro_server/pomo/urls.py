@@ -5,6 +5,11 @@ from . import views
 urlpatterns = [
     path(route="asana", view=views.asana_api_key, name="asana"),
     path(route="pomo", view=views.get_pomo_record, name="pomo"),
+    path(
+        route="set_task_complited",
+        view=views.set_task_complited,
+        name="set_task_complited",
+    ),
     path(route="auth/login", view=views.login_user, name="login_user"),
     path(route="auth/signin", view=views.signin_user, name="signin_user"),
     path(route="auth/get_csrf_token", view=views.get_csrf_token, name="get_csrf_token"),

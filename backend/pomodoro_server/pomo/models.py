@@ -29,12 +29,6 @@ class Tasks(models.Model):
         default=False,
     )
 
-    created_at = models.DateTimeField(
-        verbose_name="Created at",
-        name="created_at",
-        blank=False,
-    )
-
     def __str__(self) -> str:
         return str(self.name)
 

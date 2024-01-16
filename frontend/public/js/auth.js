@@ -1,4 +1,5 @@
 import * as api from './api.js'
+import * as timer from './pomodoro.js'
 
 const navBar = {
   loginLink: document.querySelector('#navLoginLink'),
@@ -44,6 +45,7 @@ const asanaDomElements = {
   asanaTasksNumberBadge: document.querySelector('#asana_task_number'),
   asanaList: document.querySelector('#asana_tasks_list'),
   taskName_tag: document.querySelector('#taskNameHeader'),
+  taskNameCompleteButton: document.querySelector('#taskCompleteButton'),
 
   addAsanaTaskToList: function (number, taskGid, taskName) {
     const rowNumber = document.createElement('td')
@@ -75,8 +77,44 @@ const asanaDomElements = {
 
   changeAsanaTaskNumber: function (taskNumber) {
     this.asanaTasksNumberBadge.innerHTML = taskNumber
-  }
+  },
 
+  showtaskTag: function (taskId, taskName) {
+    this.taskName_tag.innerHTML = taskName
+    this.taskName_tag.dataset.id = taskId
+    this.taskNameCompleteButton.style.display = 'inline-block'
+  },
+
+  hideTaskTag: function () {
+    this.taskName_tag.innerHTML = ''
+    this.taskName_tag.dataset.id = ''
+    this.taskNameCompleteButton.style.display = 'none'
+  },
+
+  updateTasksListDropdownMenu: function (asanaTasksList) {
+    asanaDomElements.showAsanaDropdownButton()
+    asanaDomElements.changeAsanaTaskNumber(asanaTasksList.length)
+    // Clear the dropdown tasks list
+    asanaDomElements.asanaList.innerHTML = ''
+    // Add the first empty task
+    asanaDomElements.addAsanaTaskToList(0, 'null', '--------')
+    // Add tasks from asana server
+    for (let i = 0; i < asanaTasksList.length; i++) {
+      asanaDomElements.addAsanaTaskToList(i + 1, asanaTasksList[i].gid, asanaTasksList[i].name)
+    }
+    // Add event listeners for dropdown asana tasks
+    const asanaTasks = document.querySelectorAll('.row-task')
+    asanaTasks.forEach(rowtask => {
+      rowtask.addEventListener('click', () => {
+        const taskData = rowtask.querySelector('.task-item')
+        if (taskData.dataset.id !== 'null') {
+          asanaDomElements.showtaskTag(taskData.dataset.id, taskData.innerHTML)
+        } else {
+          asanaDomElements.hideTaskTag()
+        }
+      })
+    })
+  }
 }
 
 function anonimousState () {
@@ -88,8 +126,7 @@ function anonimousState () {
   asanaDomElements.clearAsanaTaskList()
   asanaDomElements.hideAsanaDropdownButton()
   asanaDomElements.changeAsanaTaskNumber('')
-  asanaDomElements.taskName_tag.innerHTML = ''
-  asanaDomElements.taskName_tag.dataset.id = ''
+  asanaDomElements.hideTaskTag()
 }
 
 function userState (username, asanaTasksList) {
@@ -101,26 +138,8 @@ function userState (username, asanaTasksList) {
   navBar.setUsername(username)
   navBar.showDetailsLink()
   if (asanaTasksList.length !== 0) {
-    asanaDomElements.showAsanaDropdownButton()
-    asanaDomElements.changeAsanaTaskNumber(asanaTasksList.length)
-    asanaDomElements.addAsanaTaskToList(0, 'null', '--------')
-    for (let i = 0; i < asanaTasksList.length; i++) {
-      asanaDomElements.addAsanaTaskToList(i + 1, asanaTasksList[i].gid, asanaTasksList[i].name)
-    }
-    // Add event listeners for asana tasks list buttons
-    const asanaTasks = document.querySelectorAll('.row-task')
-    asanaTasks.forEach(rowtask => {
-      rowtask.addEventListener('click', () => {
-        const taskData = rowtask.querySelector('.task-item')
-        if (taskData.dataset.id !== 'null') {
-          asanaDomElements.taskName_tag.innerHTML = taskData.innerHTML
-          asanaDomElements.taskName_tag.dataset.id = taskData.dataset.id
-        } else {
-          asanaDomElements.taskName_tag.innerHTML = ''
-          asanaDomElements.taskName_tag.dataset.id = ''
-        }
-      })
-    })
+    // Add asana tasks to the dropdown list of tasks
+    asanaDomElements.updateTasksListDropdownMenu(asanaTasksList)
   } else console.log('dom_manipulation.userState(): asanaTasksList length === 0')
 }
 
@@ -265,5 +284,32 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
       alert('Can not log in. Try to connect with site administrator')
     }
+  })
+
+  // 6. Hide task tag
+  asanaDomElements.hideTaskTag()
+
+  // 7. Set task complete button functionality
+  asanaDomElements.taskNameCompleteButton.addEventListener('click', async () => {
+    console.log('task complete')
+    // 7.1 Send info to asana server
+    const taskGID = asanaDomElements.taskName_tag.dataset.id
+    const taskName = asanaDomElements.taskName_tag.innerHTML
+    await api.markTaskComplitedAsanaServer(taskGID)
+    // 7.2 Send info to backend server
+    await api.markTaskComplitedBackend(taskGID, taskName)
+    // 7.3 Update task list
+    // 7.3.1 Get Asana tasks
+    const tasks = await api.getAsanaTasksforUser()
+    console.log('tasks updated')
+    // 7.3.2 Change DOM
+    asanaDomElements.updateTasksListDropdownMenu(tasks)
+    // 7.4 Show task table to check new task
+    asanaDomElements.hideTaskTag()
+    const taskMenuButton = document.querySelector('#asana_task_dropdown')
+    console.log(taskMenuButton)
+    const dropDownTasks = new bootstrap.Dropdown(taskMenuButton)
+    console.log(dropDownTasks)
+    dropDownTasks.toggle()
   })
 })

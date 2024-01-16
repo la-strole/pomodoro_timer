@@ -2,7 +2,8 @@
 export {
   login, signin, logout,
   getCsrfToken, isAuthenificated,
-  setAsanaToken, getAsanaToken, getAsanaTasks, getAsanaTasksforUser, BASE_URL
+  setAsanaToken, getAsanaToken, getAsanaTasks, getAsanaTasksforUser, BASE_URL,
+  markTaskComplitedAsanaServer, markTaskComplitedBackend, sendPomoRecord
 }
 
 // Set the real path in production
@@ -13,6 +14,8 @@ const SIGNIN_URL = BASE_URL + 'auth/signin'
 const WHOAMI_URL = BASE_URL + 'auth/whoami'
 const GETCSRFTOKEN_URL = BASE_URL + 'auth/get_csrf_token'
 const ASANATOKEN_URL = BASE_URL + 'asana'
+const POMORECORD_URL = BASE_URL + 'pomo'
+const SETTASKCOMPLITED = BASE_URL + 'set_task_complited'
 const ASANABASEURL = 'https://app.asana.com/api/1.0'
 
 function getCookie (name) {
@@ -195,6 +198,7 @@ async function getAsanaToken () {
     return -1
   }
 }
+
 async function getAsanaUserWorkspaces (token) {
   // Get list of user's workspaces from Asana API
   // https://developers.asana.com/reference/getworkspaces
@@ -305,4 +309,97 @@ async function getAsanaTasksforUser () {
   console.log(`tasks from getasanataskforuser: ${tasks}`)
   if (tasks === -1) return -1
   return tasks
+}
+
+async function markTaskComplitedAsanaServer (taskGID) {
+  // Mark task as completed on asana server
+  // https://developers.asana.com/reference/updatetask
+  const url = `${ASANABASEURL}/tasks/${taskGID}`
+  const token = await getAsanaToken()
+  if (token === -1) return -1
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+      body: JSON.stringify({ data: { completed: true } })
+    })
+    if (!response.ok) {
+      console.log('Can not set task as complited with asana server')
+      return -1
+    }
+    console.log('Successfully mark task as complited on asana server')
+    return 0
+  } catch (error) {
+    console.log('Error with asana API - complited task.' + error)
+    return -1
+  }
+}
+
+async function markTaskComplitedBackend (taskGID, taskName) {
+  // Mark task as complite on backend server
+  try {
+    const response = await fetch(SETTASKCOMPLITED, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ task_id: taskGID, task_name: taskName })
+    })
+    if (!response.ok) {
+      console.log('Mark task complited backend failed. Response: ' + response.status)
+      return -1
+    }
+    console.log('Successfully mark task on backend as complited')
+    return 0
+  } catch (error) {
+    console.log('Mark task complited backend api error.' + error)
+    return -1
+  }
+}
+
+async function sendPomoRecord (taskId, taskName,
+  recordTimeSpent, recordFullPomo, recordPomoInRow) {
+// Send pomo record to backend server
+  try {
+    const response = await fetch(POMORECORD_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        task: {
+          task_name: taskName,
+          task_gid: taskId
+        },
+        pomo_records: {
+          time_spent: recordTimeSpent,
+          full_pomo: recordFullPomo,
+          pomo_in_row: recordPomoInRow
+        }
+      })
+    })
+    if (!response.ok) {
+      console.log('Error with pomo record response: ' + response.status)
+      return -1
+    }
+
+    const jsonData = await response.json()
+    if (!jsonData.error) {
+      console.log(jsonData.message)
+      return 0
+    }
+    console.log('Pomo record server error: ' + jsonData.error)
+    return -1
+  } catch (error) {
+    console.log('Pomo record error: ' + error)
+    return -1
+  }
 }
