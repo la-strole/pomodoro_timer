@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path(route="asana", view=views.asana_api_key, name="asana"),
-    path(route="pomo", view=views.get_pomo_record, name="pomo"),
+    path(route="pomo", view=views.pomo_records, name="pomo"),
     path(
         route="set_task_complited",
         view=views.set_task_complited,

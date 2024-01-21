@@ -29,7 +29,7 @@ class Tasks(models.Model):
         default=False,
     )
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="task",
@@ -49,12 +49,12 @@ class AsanaApiKey(models.Model):
     id = models.UUIDField(
         verbose_name="id",
         name="id",
-        default=uuid.uuid4(),
+        default=uuid.uuid4,
         primary_key=True,
         editable=False,
     )
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="asana_api_key",
@@ -73,27 +73,27 @@ class AsanaApiKey(models.Model):
         return f"{self.user}'s Asana API key"
 
 
-class PomoRecords(models.Model):
+class TaskRecords(models.Model):
     """
-    Pomodoro records from client.
+    Tasks records from client.
     """
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="pomo_records",
-        related_query_name="pomo_records",
+        related_name="task_records",
+        related_query_name="task_records",
         blank=False,
     )
 
     task = models.ForeignKey(
         Tasks,
         null=True,
-        on_delete=models.SET_NULL,
-        related_name="pomo_records",
-        related_query_name="pomo_records",
+        on_delete=models.CASCADE,
+        related_name="task_records",
+        related_query_name="task_records",
         blank=True,
     )
 
@@ -107,6 +107,30 @@ class PomoRecords(models.Model):
         name="time_spent",
         blank=False,
         help_text="The amount of time spent on the task in minutes.",
+    )
+
+    def __str__(self) -> str:
+        return f"Task Record: {self.user}:{self.task}"
+
+
+class PomoRecords(models.Model):
+    """
+    Pomodoro records from client.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="pomo_records",
+        related_query_name="pomo_records",
+        blank=False,
+    )
+
+    date = models.DateTimeField(
+        name="date",
+        auto_now=True,
     )
 
     is_full_pomo = models.BooleanField(
@@ -124,4 +148,4 @@ class PomoRecords(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"Record: {self.user}:{self.task}"
+        return f"Pomo record: {self.user}:{self.id}"

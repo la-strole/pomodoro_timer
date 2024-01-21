@@ -10,7 +10,7 @@ LOGGER = logging.getLogger(name="cryptography")
 
 # FERNET_KEY: str | None = os.getenv(key="FERNET_KEY")
 # TODO remove this in production
-FERNET_KEY = Fernet.generate_key()
+FERNET_KEY = str.encode("a4TlcAz54IpTpey37nN2NZ3TS-Rb4KZp2mpJhpeGhgA=")
 
 if not FERNET_KEY:
     message = "Can not find FERNET_KEY in environment variables"

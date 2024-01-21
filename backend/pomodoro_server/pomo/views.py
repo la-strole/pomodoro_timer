@@ -77,9 +77,9 @@ def asana_api_key(request) -> JsonResponse:
 
 
 @login_required
-def get_pomo_record(request) -> JsonResponse:
+def pomo_records(request) -> JsonResponse:
     """
-    Get pomo record from client.
+    Retrieve or send Pomodoro records from the client.
     """
     if request.method == "POST":
         try:
@@ -87,32 +87,34 @@ def get_pomo_record(request) -> JsonResponse:
             LOGGER.debug(json_data)
 
             # TODO add validators here
-            # Check if task in task database. If not - add it to database.
-            try:
-                task = models.Tasks.objects.filter(gid=json_data["task"]["task_gid"])
-                if not task:
-                    task_record = models.Tasks(
-                        gid=json_data["task"]["task_gid"],
-                        name=json_data["task"]["task_name"],
+            for record in json_data["tasksList"]:
+                # Check if task in task database. If not - add it to database.
+                tasks = models.Tasks.objects.filter(gid=record["taskId"])
+                if not tasks:
+                    new_task = models.Tasks(
+                        gid=record["taskId"],
+                        name=record["taskName"],
+                        user=request.user,
                     )
-                    task_record.save()
-
-            except Exception as task_error:
-                msg = f"Error with task operations. {task_error}"
-                LOGGER.error(msg)
-                return JsonResponse({"error": "Invalid request"}, status=500)
+                    new_task.save()
+                    task = new_task
+                else:
+                    task = tasks[0]
+                # Add task record to the database.
+                task_record = models.TaskRecords(
+                    user=request.user,
+                    task=task,
+                    time_spent=record["timeSpent"],
+                    date=datetime.now(),
+                )
+                task_record.save()
 
             # Add pomo record to database
             try:
-                task_record = models.Tasks.objects.get(
-                    gid=json_data["task"]["task_gid"]
-                )
                 pomo_record = models.PomoRecords(
                     user=request.user,
-                    task=task_record,
-                    time_spent=json_data["pomo_records"]["time_spent"],
-                    is_full_pomo=(json_data["pomo_records"]["full_pomo"] == "True"),
-                    pomo_in_row_count=json_data["pomo_records"]["pomo_in_row"],
+                    is_full_pomo=(json_data["pomo"]["isFullPomo"]),
+                    pomo_in_row_count=json_data["pomo"]["pomoInRow"],
                 )
                 pomo_record.save()
             except Exception as pomo_error:
@@ -120,7 +122,9 @@ def get_pomo_record(request) -> JsonResponse:
                 LOGGER.error(msg)
                 return JsonResponse({"error": "Invalid request"}, status=500)
 
-            return JsonResponse({"message": "JSON data processed successfully"})
+            return JsonResponse(
+                {"message": "pomo record JSON data processed successfully"}
+            )
 
         except json.JSONDecodeError as error:
             # Handle JSON decoding errors

@@ -23,7 +23,8 @@ class TimerClass {
       timer_id: false,
       pomo_session_count: 0,
       pomo_time_start: false,
-      pomo_time_end: false
+      pomo_time_end: false,
+      is_full_pomo: false
     }
 
     this.timer_history = []
@@ -34,11 +35,13 @@ class TimerClass {
       // Timer stopped by time
       if (this.timer_state.minutes === 0 && this.timer_state.seconds === 0) {
         if (!this.timer_init.pomo_session) {
+          this.timer_state.is_full_pomo = true
           this.stop_timer()
         } else {
           console.log('Timer stopped by time and autorun by pomo_session')
           // It was pomo time
           if (this.timer_control.breaking_flag) {
+            this.timer_state.is_full_pomo = true
             this.timer_state.pomo_session_count++
             const LongBreak = this.timer_state.pomo_session_count % this.timer_init.b_after
             if (LongBreak === 0 && this.timer_state.pomo_session_count > 0) {
@@ -107,7 +110,14 @@ class TimerClass {
     // If it was pomo time
     if (this.timer_control.breaking_flag) {
       this.timer_state.pomo_time_end = new Date()
-      this.timer_history.push({ start: this.timer_state.pomo_time_start, end: this.timer_state.pomo_time_end })
+      this.timer_history.push(
+        {
+          start: this.timer_state.pomo_time_start,
+          end: this.timer_state.pomo_time_end,
+          isFullPomo: this.timer_state.is_full_pomo
+        }
+      )
+      this.timer_state.is_full_pomo = false
       this.add_tree()
     }
     this.timer_state.pomo_time_start = false

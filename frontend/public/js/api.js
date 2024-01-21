@@ -274,7 +274,6 @@ async function getAsanaTasks (token) {
   // [{gid: 'task_gid', name: 'task_name'}, ...]
   // Get users workspaces (list of workspaces)
   const workspaces = await getAsanaUserWorkspaces(token)
-  console.log(`workspaces: ${workspaces}`)
   if (workspaces !== -1) { // If no errors
     const result = []
     for (const workspace of workspaces) {
@@ -294,7 +293,6 @@ async function getAsanaTasks (token) {
         }
       }
     }
-    console.log(`rsult from get asana tasks = ${result}`)
     return result
   }
   return -1
@@ -307,7 +305,6 @@ async function getAsanaTasksforUser () {
   if (token === -1) return -1
   // Get tasks from asana API
   const tasks = await getAsanaTasks(token)
-  console.log(`tasks from getasanataskforuser: ${tasks}`)
   if (tasks === -1) return -1
   return tasks
 }
@@ -364,8 +361,7 @@ async function markTaskComplitedBackend (taskGID, taskName) {
   }
 }
 
-async function sendPomoRecord (taskId, taskName,
-  recordTimeSpent, recordFullPomo, recordPomoInRow) {
+async function sendPomoRecord (taskHistoryList) {
 // Send pomo record to backend server
   try {
     const response = await fetch(POMORECORD_URL, {
@@ -375,17 +371,7 @@ async function sendPomoRecord (taskId, taskName,
         'X-CSRFToken': getCookie('csrftoken')
       },
       credentials: 'same-origin',
-      body: JSON.stringify({
-        task: {
-          task_name: taskName,
-          task_gid: taskId
-        },
-        pomo_records: {
-          time_spent: recordTimeSpent,
-          full_pomo: recordFullPomo,
-          pomo_in_row: recordPomoInRow
-        }
-      })
+      body: JSON.stringify(taskHistoryList)
     })
     if (!response.ok) {
       console.log('Error with pomo record response: ' + response.status)
