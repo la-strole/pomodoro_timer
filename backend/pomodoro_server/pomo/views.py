@@ -1,10 +1,13 @@
 import json
 import logging
-from datetime import datetime
+from datetime import date, datetime
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.exceptions import MultipleObjectsReturned, ValidationError
+from django.db import IntegrityError
+from django.db.models import Avg, Count, Max, Sum
 from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -30,8 +33,6 @@ def asana_api_key(request) -> JsonResponse:
             error_msg = f"Can not found API key in request. User: {request.user}."
             LOGGER.warning(error_msg)
             return JsonResponse({"error": "Invalid JSON data."}, status=400)
-
-        #  TODO Add check for API key
         try:
             encryptes_key = helper_cryptography.encrypt(plaintext=api_key)
         except Exception as fernet_error:
@@ -39,17 +40,12 @@ def asana_api_key(request) -> JsonResponse:
                 User: {request.user}, error: {fernet_error}"
             LOGGER.error(msg)
             return JsonResponse({"error": "Invalid request method"}, status=500)
-
-        # Add key to database
-        asana_api = models.AsanaApiKey()
-        asana_api.api_key = encryptes_key
-        asana_api.user = request.user
         try:
-            asana_api.save()
+            # Add key to database
+            models.AsanaApiKey.objects.create(api_key=encryptes_key, user=request.user)
             LOGGER.debug("Successfully add API key for user %s", request.user)
             return JsonResponse({"success": "JSON data processed successfully"})
-
-        except Exception as database_error:
+        except (IntegrityError, ValidationError, TypeError) as database_error:
             error_msg = f"Can not save Asana API key to database. \
                              User:{request.user} , error: {database_error}"
 
@@ -77,78 +73,49 @@ def asana_api_key(request) -> JsonResponse:
 
 
 @login_required
+@require_POST
 def pomo_records(request) -> JsonResponse:
     """
     Retrieve or send Pomodoro records from the client.
     """
-    if request.method == "POST":
-        try:
-            json_data = json.loads(request.body.decode("utf-8"))
-            LOGGER.debug(json_data)
-
-            # TODO add validators here
-            for record in json_data["tasksList"]:
-                # Check if task in task database. If not - add it to database.
-                tasks = models.Tasks.objects.filter(gid=record["taskId"])
-                if not tasks:
-                    new_task = models.Tasks(
-                        gid=record["taskId"],
-                        name=record["taskName"],
-                        user=request.user,
-                    )
-                    new_task.save()
-                    task = new_task
-                else:
-                    task = tasks[0]
+    try:
+        json_data = json.loads(request.body.decode("utf-8"))
+        for record in json_data["tasksList"]:
+            try:
+                # Verify if the task is in the task database. If not, add it to the database.
+                tasks = models.Tasks.objects.get_or_create(
+                    gid=record["taskId"], name=record["taskName"], user=request.user
+                )
                 # Add task record to the database.
-                task_record = models.TaskRecords(
+                models.TaskRecords.objects.create(
                     user=request.user,
-                    task=task,
+                    task=tasks[0],
                     time_spent=record["timeSpent"],
                     date=datetime.now(),
                 )
-                task_record.save()
-
-            # Add pomo record to database
-            try:
-                pomo_record = models.PomoRecords(
+                # Add pomodoro record to the database.
+                models.PomoRecords.objects.create(
                     user=request.user,
                     is_full_pomo=(json_data["pomo"]["isFullPomo"]),
                     pomo_in_row_count=json_data["pomo"]["pomoInRow"],
                 )
-                pomo_record.save()
-            except Exception as pomo_error:
-                msg = f"Error with pomo operations {pomo_error}"
-                LOGGER.error(msg)
+            except (
+                MultipleObjectsReturned,
+                IntegrityError,
+                ValidationError,
+                TypeError,
+            ) as database_error:
+                LOGGER.error(
+                    "pomo_records: Database error while get or create task or task record: %s",
+                    database_error,
+                )
                 return JsonResponse({"error": "Invalid request"}, status=500)
 
-            return JsonResponse(
-                {"message": "pomo record JSON data processed successfully"}
-            )
-
-        except json.JSONDecodeError as error:
-            # Handle JSON decoding errors
-            LOGGER.error("Can not decode pomo records JSON: %s", error)
-            return JsonResponse({"error": "Invalid JSON data"}, status=400)
-
-    elif request.method == "GET":
-        # Get pomo data from database
-        pomo_records = models.PomoRecords.objects.filter(user=request.user)
-        json_data = []
-        for record in pomo_records:
-            json_string = {"pomo_records": {}, "task": {}}
-            json_string["pomo_records"]["time_spent"] = record.time_spent
-            json_string["pomo_records"]["full_pomo"] = record.is_full_pomo
-            json_string["pomo_records"]["pomo_in_row"] = record.pomo_in_row_count
-            if record.task:
-                json_string["task"]["name"] = record.task.name
-                json_string["task"]["complited"] = record.task.complited
-            json_data.append(json_string)
-        return JsonResponse(json_data, safe=False)
-
-    else:
-        LOGGER.error("Invalid client request method: %s", request.method)
-        return JsonResponse({"error": "Invalid request method"}, status=405)
+        return JsonResponse({"message": "pomo record JSON data processed successfully"})
+    except json.JSONDecodeError as error:
+        # Handle JSON decoding errors.
+        LOGGER.error("Can not decode pomo records JSON: %s", error)
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
 
 
 @require_POST
@@ -161,29 +128,25 @@ def set_task_complited(request) -> JsonResponse:
         task_id = json_data.get("task_id")
         if task_id:
             # Get row from database
-            tasks = models.Tasks.objects.filter(gid=task_id)
-            if tasks:
-                task = tasks[0]
-                task.complited = True
-                task.save()
+            task, created = models.Tasks.objects.update_or_create(
+                user=request.user,
+                gid=task_id,
+                name=json_data["task_name"],
+                complited=True,
+                default={"complited": True},
+            )
+            if not created:
                 LOGGER.debug("Successfully set task %s as completed", task.name)
             else:
-                task_record = models.Tasks(
-                    user=request.user,
-                    gid=json_data["task_id"],
-                    name=json_data["task_name"],
-                    complited=True,
-                )
-                task_record.save()
                 LOGGER.debug(
                     "Successfully add task and set task %s as completed",
-                    task_record.name,
+                    task.name,
                 )
             return JsonResponse({"success": True})
         LOGGER.error("set_task_complited API error. No task_id in POST request.")
         raise ValueError("Value error in request - can not load JSON with task_id")
     except Exception as e:
-        LOGGER.debug("set_task_complited: %s", e)
+        LOGGER.debug("set_task_complited: error: %s", e)
         return JsonResponse(data={"error": "Invalid request."}, status=500)
 
 
@@ -277,11 +240,140 @@ def whoami(request) -> JsonResponse:
     """
     Return if user is authenticated
     """
-    # TODO remove in prodaction
-    LOGGER.debug(
-        f"Cookies: {request.COOKIES} username: {request.user.username} id: {request.user.id}"
-    )
-
     if request.user.is_authenticated:
         return JsonResponse({"status": "auth", "username": f"{request.user}"})
     return JsonResponse({"status": "not_auth"})
+
+
+@login_required
+@require_GET
+def daily_activities(request) -> JsonResponse:
+    """
+    Provide JSON data for daily activities on Google Charts in the frontend.
+    """
+    json_data = {}
+    # Retrieve the date from the GET request.
+    date_request = request.GET.get("date", "")
+    # Convert the date string to a Python date object.
+    date_request = date_request.split("-")
+    date_data = date(date_request[2], date_request[1] + 1, date_request[0])
+
+    # Find the mean and maximum values of time spent each day from all recorded times.
+    yearly_time_data_qs = (
+        models.TaskRecords.objects.filter(user=request.user)
+        .values("date__date")  # Truncate the datetime to get the date
+        .annotate(time_sum=Sum("time_spent"))
+    )
+    try:
+        current_time_value = yearly_time_data_qs.get(date__date=date_data)["time_spent"]
+    except models.TaskRecords.DoesNotExist:
+        current_time_value = 0
+    mean_time, max_time = yearly_time_data_qs.aggregate(
+        Avg("time_sum"), Max("time_sum")
+    ).values()
+    json_data["timeGauge"] = [current_time_value, mean_time, max_time]
+
+    # Find the mean and maximum values of pomodoro from each day from all recorded times.
+    yearly_pomo_data_qs = (
+        models.PomoRecords.objects.filter(user=request.user, is_full_pomo=True)
+        .values("date__date")
+        .annotate(pomo_count=Count("is_full_pomo"))
+    )
+    try:
+        current_pomo_value = yearly_pomo_data_qs.get(date__date=date_data)["pomo_count"]
+    except models.PomoRecords.DoesNotExist:
+        current_pomo_value = 0
+    mean_pomo, max_pomo = yearly_pomo_data_qs.aggregate(
+        Avg("pomo_count"), Max("pomo_count")
+    ).values()
+    json_data["pomoGauge"] = [current_pomo_value, mean_pomo, max_pomo]
+
+    # Find Max and Mean pomo_in_row_count
+    max_pomo_in_row, mean_pomo_in_row = (
+        models.PomoRecords.objects.filter(user=request.user)
+        .aggregate(Max("pomo_in_row_count"), Avg("pomo_in_row_count"))
+        .values()
+    )
+    current_pomo_in_row = models.PomoRecords.objects.filter(
+        user=request.user, date__date=date_data
+    ).aggregate(Max("pomo_in_row_count"))["pomo_in_row_count__max"]
+    json_data["pomoInRowGauge"] = [
+        current_pomo_in_row,
+        mean_pomo_in_row,
+        max_pomo_in_row,
+    ]
+
+    # Find the daily activities for a particular day.
+    daily_data = list(
+        (
+            models.TaskRecords.objects.select_related("task")
+            .filter(user=request.user, date__date=date_data)
+            .values("task__name")
+            .annotate(spent=Sum("time_spent"))
+        )
+    )
+    json_data["donateChart"] = [list(dict_item.values()) for dict_item in daily_data]
+
+    return JsonResponse(json_data)
+
+
+@login_required
+@require_GET
+def yearly_chart(request) -> JsonResponse:
+    """
+    Provide JSON data for yearly activities on Google Charts in the frontend.
+    """
+    json_data = {"timeData": {}, "pomoData": {}}
+
+    year_data_time = list(
+        models.TaskRecords.objects.filter(user=request.user)
+        .values("date__date")
+        .annotate(time_spent=Sum("time_spent"))
+    )
+    for item in year_data_time:
+        year = item["date__date"].year
+        if year not in json_data["timeData"]:
+            json_data["timeData"][year] = [[item["date__date"].day, item["time_spent"]]]
+        else:
+            json_data["timeData"][year].append(
+                [item["date__date"].day, item["time_spent"]]
+            )
+
+    year_data_pomo = (
+        models.PomoRecords.objects.filter(user=request.user, is_full_pomo=True)
+        .values("date__date")
+        .annotate(pomo_count=Count("is_full_pomo"))
+    )
+    for item in year_data_pomo:
+        year = item["date__date"].year
+        if year not in json_data["pomoData"]:
+            json_data["pomoData"][year] = [[item["date__date"].day, item["pomo_count"]]]
+        else:
+            json_data["pomoData"][year].append(
+                [item["date__date"].day, item["pomo_count"]]
+            )
+
+    return JsonResponse(json_data)
+
+
+@login_required
+@require_GET
+def task_chart(request) -> JsonResponse:
+    """
+    Provide JSON data for task activities on Google Charts in the frontend.
+    """
+    gid = request.GET.get("gid")
+    json_data = {}
+
+    task_time_data = list(
+        models.TaskRecords.objects.select_related("task")
+        .filter(task__gid=gid)
+        .values("date__date")
+        .annotate(time_spent=Sum("time_spent"))
+    )
+
+    json_data["timeData"] = [
+        [item["date__date"].isoformat(), item["time_spent"]] for item in task_time_data
+    ]
+
+    return JsonResponse(json_data)

@@ -32,14 +32,14 @@ class TimerClass {
 
   timer () {
     if (!this.timer_control.pause_flag && !this.timer_control.stop_flag) {
-      // Timer stopped by time
+      // Timer stopped by time.
       if (this.timer_state.minutes === 0 && this.timer_state.seconds === 0) {
         if (!this.timer_init.pomo_session) {
           this.timer_state.is_full_pomo = true
           this.stop_timer()
         } else {
           console.log('Timer stopped by time and autorun by pomo_session')
-          // It was pomo time
+          // It was pomo time.
           if (this.timer_control.breaking_flag) {
             this.timer_state.is_full_pomo = true
             this.timer_state.pomo_session_count++
@@ -50,7 +50,7 @@ class TimerClass {
               this.initiate_timer(this.timer_init.b_m, this.timer_init.b_s, this.timer_init.pomo_session)
             }
             this.timer_control.breaking_flag = false
-          } else { // It was breaking time
+          } else { // It was breaking time.
             this.initiate_timer(this.timer_init.m, this.timer_init.s, this.timer_init.pomo_session)
             this.timer_state.pomo_time_start = new Date()
             this.timer_control.breaking_flag = true
@@ -107,7 +107,7 @@ class TimerClass {
   }
 
   initiate_timer (minutes, seconds, pomoSession) {
-    // If it was pomo time
+    // If it was pomo time.
     if (this.timer_control.breaking_flag) {
       this.timer_state.pomo_time_end = new Date()
       this.timer_history.push(
@@ -127,7 +127,7 @@ class TimerClass {
     this.timer_init.pomo_session = pomoSession
     this.play_sound()
     this.change_display()
-    // Run time stop - time begin
+    // Run time stop - time begin.
     return true
   }
 

@@ -7,7 +7,7 @@ from django.db import models
 # Create your models here.
 class Tasks(models.Model):
     """
-    A list of tasks from the Asana
+    A list of tasks from the Asana.
     """
 
     gid = models.CharField(
@@ -43,7 +43,7 @@ class Tasks(models.Model):
 
 class AsanaApiKey(models.Model):
     """
-    API list for  Asana users.
+    List of PATs for Asana users.
     """
 
     id = models.UUIDField(
@@ -75,7 +75,7 @@ class AsanaApiKey(models.Model):
 
 class TaskRecords(models.Model):
     """
-    Tasks records from client.
+    Task records from the client.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -112,10 +112,13 @@ class TaskRecords(models.Model):
     def __str__(self) -> str:
         return f"Task Record: {self.user}:{self.task}"
 
+    class Meta:
+        indexes = [models.Index(fields=["date"])]
+
 
 class PomoRecords(models.Model):
     """
-    Pomodoro records from client.
+    Pomodoro records from the client.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

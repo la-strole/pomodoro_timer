@@ -15,4 +15,15 @@ urlpatterns = [
     path(route="auth/get_csrf_token", view=views.get_csrf_token, name="get_csrf_token"),
     path(route="auth/logout", view=views.logout_user, name="logout_user"),
     path(route="auth/whoami", view=views.whoami, name="whoami"),
+    path(
+        route="details/dailyActivities",
+        view=views.daily_activities,
+        name="daily_activities",
+    ),
+    path(
+        route="details/yearlyActivities",
+        view=views.yearly_chart,
+        name="yearly_activities",
+    ),
+    path(route="details/taskActivities", view=views.task_chart, name="task_activities"),
 ]

@@ -26,11 +26,11 @@ function getCookie (name) {
 }
 
 async function signin (signinData) {
-  // Create the new user account and login the user
+  // Set up the new user account and log in the user.
 
-  // Get CSRF token
+  // Get CSRF token.
   await getCsrfToken()
-  // Create new user account and login with it's credentials
+  // Establish a new user account and log in using its credentials.
   try {
     const bodyData = JSON.stringify(signinData)
     const response = await fetch(SIGNIN_URL, {
@@ -54,7 +54,7 @@ async function signin (signinData) {
 }
 
 async function login (loginData) {
-  // login user on server with given credentials
+  // Authenticate the user on the server using the provided credentials.
 
   // Get CSRF token
   await getCsrfToken()
@@ -82,20 +82,20 @@ async function login (loginData) {
 }
 
 async function isAuthenificated () {
-  // Check if the user is already authenticated
+  // Verify if the user is already authenticated.
 
   try {
     const response = await fetch(WHOAMI_URL, {
-      credentials: 'same-origin' // to send cookies
+      credentials: 'same-origin' // To transmit cookies.
     })
     if (!response.ok) {
       console.log('Error with whoami request. Response status: ' + response.status)
       return -1
     }
     console.log('WHOAMI API successfull')
-    // Check if user is authenificated
+    // Verify if the user is authenticated.
     const responseData = await response.json()
-    // Get status
+    // Retrieve the status.
     const status = responseData.status
     if (status === 'auth') {
       const username = responseData.username
@@ -111,7 +111,7 @@ async function isAuthenificated () {
 }
 
 async function getCsrfToken () {
-  // Get the CSRF token from django server
+  // Retrieve the CSRF token from the Django server.
   try {
     const response = await fetch(GETCSRFTOKEN_URL)
     if (!response.ok) {
@@ -128,11 +128,11 @@ async function getCsrfToken () {
 }
 
 async function logout () {
-  // Logout the user on server
+  // Log out the user on the server.
 
   try {
     const response = await fetch(LOGOUT_URL, {
-      credentials: 'same-origin' // to send cookies
+      credentials: 'same-origin' // To transmit cookies.
     })
     if (!response.ok) {
       console.log('Error with logout request. Response status: ' + response.status)
@@ -147,7 +147,7 @@ async function logout () {
 }
 
 async function setAsanaToken (token) {
-  // Save asana PAT to the database on server
+  // Store the Asana Personal Access Token (PAT) in the server database.
 
   try {
     const response = await fetch(ASANATOKEN_URL, {
@@ -178,8 +178,7 @@ async function setAsanaToken (token) {
 }
 
 async function getAsanaToken () {
-  // Get Asana PAT from server
-
+  // Retrieve the Asana Personal Access Token (PAT) from the server.
   try {
     const response = await fetch(ASANATOKEN_URL, {
       headers: {
@@ -201,7 +200,7 @@ async function getAsanaToken () {
 }
 
 async function getAsanaUserWorkspaces (token) {
-  // Get list of user's workspaces from Asana API
+  // Fetch a list of the user's workspaces from the Asana API.
   // https://developers.asana.com/reference/getworkspaces
   const url = ASANABASEURL + '/workspaces?' + new URLSearchParams({ limit: '50' })
   try {
@@ -224,7 +223,7 @@ async function getAsanaUserWorkspaces (token) {
 }
 
 async function getAsanaUserTaskList (token, workspaceId) {
-  // Get a user's task list
+  // Retrieve the task list for a user.
   // https://developers.asana.com/reference/getusertasklistforuser
   const url = ASANABASEURL + '/users/me/user_task_list?' + new URLSearchParams({ workspace: workspaceId })
   try {
@@ -247,7 +246,7 @@ async function getAsanaUserTaskList (token, workspaceId) {
 }
 
 async function getAsanaTasksFromTasklist (token, userTaskListGid) {
-  // Get tasks from a user task list
+  // Retrieve tasks from a user's task list.
   // https://developers.asana.com/reference/getusertasklistforuser
   const url = `${ASANABASEURL}/user_task_lists/${userTaskListGid}/tasks?${new URLSearchParams({ completed_since: 'now' })}`
   try {
@@ -270,26 +269,24 @@ async function getAsanaTasksFromTasklist (token, userTaskListGid) {
 }
 
 async function getAsanaTasks (token) {
-  // Retrurn tasks from asana with user's PAT
+  // Return tasks from Asana using the user's Personal Access Token (PAT).
   // [{gid: 'task_gid', name: 'task_name'}, ...]
-  // Get users workspaces (list of workspaces)
+  // Retrieve the list of workspaces for a user.
   const workspaces = await getAsanaUserWorkspaces(token)
-  if (workspaces !== -1) { // If no errors
+  if (workspaces !== -1) { // If there are no errors.
     const result = []
     for (const workspace of workspaces) {
-      // Get users task lists
+      // Retrieve the task lists for a user.
       const taskLists = await getAsanaUserTaskList(token, workspace.gid)
-      if (taskLists !== -1) { // If no errors
-        // Get tasks
+      if (taskLists !== -1) { // If there are no errors.
+        // Retrieve tasks.
         const tasksData = await getAsanaTasksFromTasklist(token, taskLists.data.gid)
-        if (tasksData !== -1) { // If no errors
-          // Add tasks to returned result
+        if (tasksData !== -1) { // If there are no errors.
+          // Include tasks in the returned result.
           // const tasks = []
           tasksData.data.forEach((task) => {
-            // tasks.push({ gid: task.gid, name: task.name })
             result.push({ gid: task.gid, name: task.name })
           })
-          // result.push({ workspaceName: workspace.name, workspaceTasks: tasks })
         }
       }
     }
@@ -299,18 +296,18 @@ async function getAsanaTasks (token) {
 }
 
 async function getAsanaTasksforUser () {
-  // Get Asana PAT for user and get tasks from asana API
-  // Get PAT from server
+  // Retrieve the Asana Personal Access Token (PAT) for the user and fetch tasks from the Asana API.
+  // Retrieve the Personal Access Token (PAT) from the server.
   const token = await getAsanaToken()
   if (token === -1) return -1
-  // Get tasks from asana API
+  // Fetch tasks from the Asana API.
   const tasks = await getAsanaTasks(token)
   if (tasks === -1) return -1
   return tasks
 }
 
 async function markTaskComplitedAsanaServer (taskGID) {
-  // Mark task as completed on asana server
+  // Mark a task as completed on the Asana server.
   // https://developers.asana.com/reference/updatetask
   const url = `${ASANABASEURL}/tasks/${taskGID}`
   const token = await getAsanaToken()
@@ -338,7 +335,7 @@ async function markTaskComplitedAsanaServer (taskGID) {
 }
 
 async function markTaskComplitedBackend (taskGID, taskName) {
-  // Mark task as complite on backend server
+  // Mark a task as completed on the backend server.
   try {
     const response = await fetch(SETTASKCOMPLITED, {
       method: 'POST',
@@ -362,7 +359,7 @@ async function markTaskComplitedBackend (taskGID, taskName) {
 }
 
 async function sendPomoRecord (taskHistoryList) {
-// Send pomo record to backend server
+// Transmit the Pomodoro record to the backend server.
   try {
     const response = await fetch(POMORECORD_URL, {
       method: 'POST',

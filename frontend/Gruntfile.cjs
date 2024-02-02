@@ -7,7 +7,7 @@ module.exports = function (grunt) {
 
     htmlhint: {
       options: {
-        htmlhintrc: '.htmlhintrc' // Create an HTMLLint configuration file
+        htmlhintrc: '.htmlhintrc' // Create an HTMLLint configuration file.
       },
       src: ['public/*.html']
     },
@@ -28,10 +28,10 @@ module.exports = function (grunt) {
       my_target: {
         files: [{
           expand: true,
-          cwd: './public/js', // Source directory
-          src: ['**/*.js'], // Match all JavaScript files
-          dest: 'dist/js', // Output directory
-          ext: '.js' // Extension for minified files
+          cwd: './public/js', // Source directory.
+          src: ['**/*.js'], // Match all JavaScript files.
+          dest: 'dist/js', // Output directory.
+          ext: '.js' // Extension for minified files.
         }]
       }
     }
