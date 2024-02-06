@@ -207,7 +207,7 @@ function sendPomoRecord () {
       const jsonRecord = {
         taskId: taskRecord.taskId,
         taskName: taskRecord.taskName,
-        timeSpent: taskRecord.time.end - taskRecord.time.start
+        timeSpent: Math.round((taskRecord.time.end - taskRecord.time.start) / 60000) // minutes from milliseconds
       }
       jsonBody.tasksList.push(jsonRecord)
     })

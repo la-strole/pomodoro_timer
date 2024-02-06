@@ -256,7 +256,9 @@ def daily_activities(request) -> JsonResponse:
     date_request = request.GET.get("date", "")
     # Convert the date string to a Python date object.
     date_request = date_request.split("-")
-    date_data = date(date_request[2], date_request[1] + 1, date_request[0])
+    date_data = date(
+        int(date_request[2]), int(date_request[1]) + 1, int(date_request[0])
+    )
 
     # Find the mean and maximum values of time spent each day from all recorded times.
     yearly_time_data_qs = (
@@ -265,13 +267,13 @@ def daily_activities(request) -> JsonResponse:
         .annotate(time_sum=Sum("time_spent"))
     )
     try:
-        current_time_value = yearly_time_data_qs.get(date__date=date_data)["time_spent"]
+        current_time_value = yearly_time_data_qs.get(date__date=date_data)["time_sum"]
     except models.TaskRecords.DoesNotExist:
         current_time_value = 0
     mean_time, max_time = yearly_time_data_qs.aggregate(
         Avg("time_sum"), Max("time_sum")
     ).values()
-    json_data["timeGauge"] = [current_time_value, mean_time, max_time]
+    json_data["timeGauge"] = [current_time_value, round(mean_time), max_time]
 
     # Find the mean and maximum values of pomodoro from each day from all recorded times.
     yearly_pomo_data_qs = (
@@ -286,7 +288,7 @@ def daily_activities(request) -> JsonResponse:
     mean_pomo, max_pomo = yearly_pomo_data_qs.aggregate(
         Avg("pomo_count"), Max("pomo_count")
     ).values()
-    json_data["pomoGauge"] = [current_pomo_value, mean_pomo, max_pomo]
+    json_data["pomoGauge"] = [current_pomo_value, round(mean_pomo), max_pomo]
 
     # Find Max and Mean pomo_in_row_count
     max_pomo_in_row, mean_pomo_in_row = (
@@ -297,9 +299,11 @@ def daily_activities(request) -> JsonResponse:
     current_pomo_in_row = models.PomoRecords.objects.filter(
         user=request.user, date__date=date_data
     ).aggregate(Max("pomo_in_row_count"))["pomo_in_row_count__max"]
+    if not current_pomo_in_row:
+        current_pomo_in_row = 0
     json_data["pomoInRowGauge"] = [
         current_pomo_in_row,
-        mean_pomo_in_row,
+        round(mean_pomo_in_row),
         max_pomo_in_row,
     ]
 
@@ -323,7 +327,7 @@ def yearly_chart(request) -> JsonResponse:
     """
     Provide JSON data for yearly activities on Google Charts in the frontend.
     """
-    json_data = {"timeData": {}, "pomoData": {}}
+    json_data = {}
 
     year_data_time = list(
         models.TaskRecords.objects.filter(user=request.user)
@@ -331,13 +335,8 @@ def yearly_chart(request) -> JsonResponse:
         .annotate(time_spent=Sum("time_spent"))
     )
     for item in year_data_time:
-        year = item["date__date"].year
-        if year not in json_data["timeData"]:
-            json_data["timeData"][year] = [[item["date__date"].day, item["time_spent"]]]
-        else:
-            json_data["timeData"][year].append(
-                [item["date__date"].day, item["time_spent"]]
-            )
+        date_str = item["date__date"].isoformat()
+        json_data[date_str] = {"time": item["time_spent"], "pomo": 0}
 
     year_data_pomo = (
         models.PomoRecords.objects.filter(user=request.user, is_full_pomo=True)
@@ -345,13 +344,11 @@ def yearly_chart(request) -> JsonResponse:
         .annotate(pomo_count=Count("is_full_pomo"))
     )
     for item in year_data_pomo:
-        year = item["date__date"].year
-        if year not in json_data["pomoData"]:
-            json_data["pomoData"][year] = [[item["date__date"].day, item["pomo_count"]]]
+        date_str = item["date__date"].isoformat()
+        if date_str in json_data:
+            json_data[date_str]["pomo"] = item["pomo_count"]
         else:
-            json_data["pomoData"][year].append(
-                [item["date__date"].day, item["pomo_count"]]
-            )
+            json_data[date_str] = {"time": 0, "pomo": item["pomo_count"]}
 
     return JsonResponse(json_data)
 
@@ -377,3 +374,17 @@ def task_chart(request) -> JsonResponse:
     ]
 
     return JsonResponse(json_data)
+
+
+@login_required
+@require_GET
+def get_task_list(request) -> JsonResponse:
+    """
+    Return a list of tasks for a user
+    """
+    result = list(
+        models.Tasks.objects.filter(user=request.user)
+        .order_by("name")
+        .values("gid", "name")
+    )
+    return JsonResponse({"taskList": result})

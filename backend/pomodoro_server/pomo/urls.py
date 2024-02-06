@@ -26,4 +26,9 @@ urlpatterns = [
         name="yearly_activities",
     ),
     path(route="details/taskActivities", view=views.task_chart, name="task_activities"),
+    path(
+        route="details/taskList",
+        view=views.get_task_list,
+        name="get_task_list",
+    ),
 ]
