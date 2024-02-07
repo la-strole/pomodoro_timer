@@ -264,7 +264,7 @@ def daily_activities(request) -> JsonResponse:
     yearly_time_data_qs = (
         models.TaskRecords.objects.filter(user=request.user)
         .values("date__date")  # Truncate the datetime to get the date
-        .annotate(time_sum=Sum("time_spent"))
+        .annotate(time_sum=(Sum("time_spent") / 60))
     )
     try:
         current_time_value = yearly_time_data_qs.get(date__date=date_data)["time_sum"]
@@ -313,7 +313,7 @@ def daily_activities(request) -> JsonResponse:
             models.TaskRecords.objects.select_related("task")
             .filter(user=request.user, date__date=date_data)
             .values("task__name")
-            .annotate(spent=Sum("time_spent"))
+            .annotate(spent=Sum("time_spent") / 60)
         )
     )
     json_data["donateChart"] = [list(dict_item.values()) for dict_item in daily_data]
@@ -332,7 +332,7 @@ def yearly_chart(request) -> JsonResponse:
     year_data_time = list(
         models.TaskRecords.objects.filter(user=request.user)
         .values("date__date")
-        .annotate(time_spent=Sum("time_spent"))
+        .annotate(time_spent=Sum("time_spent") / 60)
     )
     for item in year_data_time:
         date_str = item["date__date"].isoformat()
@@ -366,7 +366,7 @@ def task_chart(request) -> JsonResponse:
         models.TaskRecords.objects.select_related("task")
         .filter(task__gid=gid)
         .values("date__date")
-        .annotate(time_spent=Sum("time_spent"))
+        .annotate(time_spent=Sum("time_spent") / 60)
     )
 
     json_data["timeData"] = [
