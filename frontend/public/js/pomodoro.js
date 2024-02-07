@@ -24,6 +24,7 @@ let timeStep
 let currentDisplay = '' // 'pomo' or 'break'.
 
 let isAuthentificated = false
+let logoutOrCloseFlag = false
 
 const navBar = {
   loginLink: document.querySelector('#navLoginLink'),
@@ -207,7 +208,7 @@ function sendPomoRecord () {
       const jsonRecord = {
         taskId: taskRecord.taskId,
         taskName: taskRecord.taskName,
-        timeSpent: Math.round((taskRecord.time.end - taskRecord.time.start) / 60000) // minutes from milliseconds
+        timeSpent: Math.round((taskRecord.time.end - taskRecord.time.start) / 1000) // seconds from milliseconds
       }
       jsonBody.tasksList.push(jsonRecord)
     })
@@ -239,11 +240,13 @@ function runningTimerDisplays () {
       console.log('Clear the task history when the "stop" event occurs in the runningDisplay function.')
       // Refresh/update the task list from the Asana server.
       // 1 Retrieve Asana tasks.
-      api.getAsanaTasksforUser().then((tasks) => {
-        // 2 Modify the DOM.
-        asanaDomElements.updateTasksListDropdownMenu(tasks)
+      if (!logoutOrCloseFlag) {
+        api.getAsanaTasksforUser().then((tasks) => {
+          // 2 Modify the DOM.
+          asanaDomElements.updateTasksListDropdownMenu(tasks)
+        }
+        )
       }
-      )
     }
     // Conceal the image for the breaking time.
     displayElements.breaking_image_tag.style.display = 'none'
@@ -424,14 +427,16 @@ async function completeTaskButtonClick () {
 
 document.addEventListener('DOMContentLoaded', function () {
   // Send the task to the backend server when the tab or window is closed.
+
   window.addEventListener('beforeunload', function (e) {
     // If the "Close" button is clicked during running time,
     // assign the end time to the current task in the task history list.
     if ((t.timer_control.breaking_flag && !t.timer_control.stop_flag && !t.timer_control.pause_flag && isAuthentificated)) {
-      t.task_history.at(-1).time.end = Date.now()
-      sendPomoRecord()
+      logoutOrCloseFlag = true
+      displayElements.stop_button_tag.click()
     }
   })
+
   // Create a Bootstrap offcanvas component for timer settings.
   const myOffcanvas = document.querySelector('#myOffcanvas')
   // eslint-disable-next-line no-undef
@@ -504,17 +509,13 @@ document.addEventListener('DOMContentLoaded', function () {
   })
   // 3.2 Logout Link
   navBar.logoutLink.addEventListener('click', async function () {
+    logoutOrCloseFlag = true
     // Transmit the Pomodoro record to the backend server.
     // If the "Logout" link is clicked during running time,
-    // Assign the end time to the current task in the task history list.
     if ((t.timer_control.breaking_flag && !t.timer_control.stop_flag && !t.timer_control.pause_flag)) {
-      t.task_history.at(-1).time.end = Date.now()
-      console.log('Include the task stop time when the logout link is clicked. ' + JSON.stringify(t.task_history))
-      // Assign the end time to the current task in the task history list.
-      t.task_history.at(-1).time.end = Date.now()
-      console.log('Include the task end time in the task history when the "logout" link occurs. ' + JSON.stringify(t.task_history))
+      console.log('Simulate Stop button clicking when the "logout" event occurs. ' + JSON.stringify(t.task_history))
       // Send the Pomodoro record to the backend server.
-      sendPomoRecord()
+      displayElements.stop_button_tag.click()
     }
     // Log out the user on the server using the API.
     const reslult = await api.logout()
@@ -586,6 +587,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const result = await api.login(jsonData)
 
     if (result !== -1) {
+      logoutOrCloseFlag = false
       // 5.4 Retrieve Asana tasks.
       const tasks = await api.getAsanaTasksforUser()
       // 5.5 Modify the DOM.
