@@ -83,6 +83,8 @@ def pomo_records(request) -> JsonResponse:
         for record in json_data["tasksList"]:
             try:
                 # Verify if the task is in the task database. If not, add it to the database.
+                if record["taskId"] == "null":
+                    record["taskName"] = "--------"
                 tasks = models.Tasks.objects.get_or_create(
                     gid=record["taskId"], name=record["taskName"], user=request.user
                 )
