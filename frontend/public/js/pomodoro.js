@@ -554,7 +554,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 4.2 Retrieve user credentials.
     const formData = new FormData(this) // Create a FormData object from the form.
     const authJsonData = { username: formData.get('username'), password: formData.get('password') }
-    const asanaPatData = { api_key: formData.get('asanaAPI') }
+    const asanaPatData = formData.get('asanaAPI')
 
     // 4.3 Authenticate and sign in a new user on the backend server.
     const result = await api.signin(authJsonData)

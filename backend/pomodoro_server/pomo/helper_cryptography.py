@@ -13,9 +13,9 @@ LOGGER = logging.getLogger(name="cryptography")
 FERNET_KEY = str.encode("a4TlcAz54IpTpey37nN2NZ3TS-Rb4KZp2mpJhpeGhgA=")
 
 if not FERNET_KEY:
-    message = "Can not find FERNET_KEY in environment variables"
-    LOGGER.error(msg=message)
-    raise ValueError(message)
+    msg = "Can not find FERNET_KEY in environment variables"
+    LOGGER.error(msg)
+    raise ValueError(msg)
 
 
 def genereate_key() -> bytes:

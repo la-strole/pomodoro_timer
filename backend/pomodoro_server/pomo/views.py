@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import date, datetime
 
@@ -12,8 +11,9 @@ from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
+from pydantic import ValidationError as PydanticValidationError
 
-from . import helper_cryptography, models
+from . import helper_cryptography, models, validation
 
 LOGGER = logging.getLogger(name="pomoAPI")
 
@@ -24,24 +24,25 @@ def asana_api_key(request) -> JsonResponse:
     Get the API key associated with Asana account.
     Send API key associated with username.
     """
-    # Get API key
+    # Get API key.
     if request.method == "POST":
-        json_data = json.loads(request.body.decode("utf-8"))
-        api_key = json_data.get("api_key", "")
-
-        if not api_key:
-            error_msg = f"Can not found API key in request. User: {request.user}."
+        try:
+            api_key: str = validation.AsanaApiKey.model_validate_json(
+                request.body.decode("utf-8")
+            ).api_key
+        except ValidationError as e:
+            error_msg = f"API key validation error. User: {request.user}. Error: {e}"
             LOGGER.warning(error_msg)
             return JsonResponse({"error": "Invalid JSON data."}, status=400)
         try:
             encryptes_key = helper_cryptography.encrypt(plaintext=api_key)
-        except Exception as fernet_error:
+        except TypeError as fernet_error:
             msg = f"Can not encrypt plain asana API key with fernet. \
                 User: {request.user}, error: {fernet_error}"
             LOGGER.error(msg)
-            return JsonResponse({"error": "Invalid request method"}, status=500)
+            return JsonResponse({"error": "Invalid Asana PAT"}, status=500)
         try:
-            # Add key to database
+            # Add key to the database.
             models.AsanaApiKey.objects.create(api_key=encryptes_key, user=request.user)
             LOGGER.debug("Successfully add API key for user %s", request.user)
             return JsonResponse({"success": "JSON data processed successfully"})
@@ -78,78 +79,94 @@ def pomo_records(request) -> JsonResponse:
     """
     Retrieve or send Pomodoro records from the client.
     """
-    try:
-        json_data = json.loads(request.body.decode("utf-8"))
-        for record in json_data["tasksList"]:
-            try:
-                # Verify if the task is in the task database. If not, add it to the database.
-                if record["taskId"] == "null":
-                    record["taskName"] = "--------"
-                tasks = models.Tasks.objects.get_or_create(
-                    gid=record["taskId"], name=record["taskName"], user=request.user
-                )
-                # Add task record to the database.
-                models.TaskRecords.objects.create(
-                    user=request.user,
-                    task=tasks[0],
-                    time_spent=record["timeSpent"],
-                    date=datetime.now(),
-                )
-                # Add pomodoro record to the database.
-                models.PomoRecords.objects.create(
-                    user=request.user,
-                    is_full_pomo=(json_data["pomo"]["isFullPomo"]),
-                    pomo_in_row_count=json_data["pomo"]["pomoInRow"],
-                )
-            except (
-                MultipleObjectsReturned,
-                IntegrityError,
-                ValidationError,
-                TypeError,
-            ) as database_error:
-                LOGGER.error(
-                    "pomo_records: Database error while get or create task or task record: %s",
-                    database_error,
-                )
-                return JsonResponse({"error": "Invalid request"}, status=500)
 
-        return JsonResponse({"message": "pomo record JSON data processed successfully"})
-    except json.JSONDecodeError as error:
-        # Handle JSON decoding errors.
-        LOGGER.error("Can not decode pomo records JSON: %s", error)
-        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    try:
+        json_data = validation.PomoRecord.model_validate_json(
+            request.body.decode("utf-8")
+        )
+    except PydanticValidationError as e:
+        msg = f"Invalid request. pomo record validation error: {e}"
+        LOGGER.error(msg)
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+    for record in json_data.tasksList:
+        try:
+            # Verify if the task is in the task database. If not, add it to the database.
+            tasks = models.Tasks.objects.get_or_create(
+                gid=record.taskId, name=record.taskName, user=request.user
+            )
+            # Add task record to the database.
+            models.TaskRecords.objects.create(
+                user=request.user,
+                task=tasks[0],
+                time_spent=record.timeSpent,
+                date=datetime.now(),
+            )
+            # Add pomodoro record to the database.
+            models.PomoRecords.objects.create(
+                user=request.user,
+                is_full_pomo=(json_data.pomo.isFullPomo),
+                pomo_in_row_count=json_data.pomo.pomoInRow,
+            )
+        except (
+            MultipleObjectsReturned,
+            IntegrityError,
+            ValidationError,
+            TypeError,
+        ) as database_error:
+            LOGGER.error(
+                "pomo_records: Database error while get or create task or task record: %s",
+                database_error,
+            )
+            return JsonResponse({"error": "Invalid request"}, status=500)
+
+    return JsonResponse({"message": "pomo record JSON data processed successfully"})
 
 
 @require_POST
 def set_task_complited(request) -> JsonResponse:
     """
-    Mark the task as completed in the database
+    Mark the task as completed in the database.
     """
+
     try:
-        json_data: dict = json.loads(request.body.decode("utf-8"))
-        task_id = json_data.get("task_id")
-        if task_id:
-            # Get row from database
-            task, created = models.Tasks.objects.update_or_create(
-                user=request.user,
-                gid=task_id,
-                name=json_data["task_name"],
-                complited=True,
-                default={"complited": True},
-            )
-            if not created:
-                LOGGER.debug("Successfully set task %s as completed", task.name)
-            else:
-                LOGGER.debug(
-                    "Successfully add task and set task %s as completed",
-                    task.name,
-                )
-            return JsonResponse({"success": True})
-        LOGGER.error("set_task_complited API error. No task_id in POST request.")
-        raise ValueError("Value error in request - can not load JSON with task_id")
-    except Exception as e:
-        LOGGER.debug("set_task_complited: error: %s", e)
-        return JsonResponse(data={"error": "Invalid request."}, status=500)
+        json_data = validation.TaskComplitedAPI.model_validate_json(
+            request.body.decode("utf-8")
+        )
+    except PydanticValidationError as e:
+        msg = f"Task Complited record validation error: user: {request.user}, {e}"
+        LOGGER.warning(msg)
+        return JsonResponse({"error": "Invalid request"}, status=500)
+
+    # Get row from database
+    try:
+        task, created = models.Tasks.objects.update_or_create(
+            user=request.user,
+            gid=json_data.task_id,
+            name=json_data.task_name,
+            complited=True,
+            default={"complited": True},
+        )
+    except (
+        MultipleObjectsReturned,
+        IntegrityError,
+        ValidationError,
+        TypeError,
+    ) as e:
+        msg = (
+            f"Database error while setting task as complite. user: {request.user}, {e}"
+        )
+        LOGGER.warning(msg)
+        return JsonResponse({"error": "Invalid request"}, status=500)
+
+    if not created:
+        LOGGER.debug("Successfully set task %s as completed", task.name)
+    else:
+        LOGGER.debug(
+            "Successfully add task and set task %s as completed",
+            task.name,
+        )
+    return JsonResponse({"success": True})
 
 
 @require_POST
@@ -160,10 +177,8 @@ def login_user(request) -> JsonResponse:
 
     # Get user credentials
     try:
-        json_data: dict = json.loads(request.body.decode("utf-8"))
-        username: str = json_data["username"]
-        password: str = json_data["password"]
-    except Exception as e:
+        json_data = validation.UserAPI.model_validate_json(request.body.decode("utf-8"))
+    except PydanticValidationError as e:
         LOGGER.error(
             "Can not parse login request, %s error: %s",
             request.body.decode("utf-8"),
@@ -171,9 +186,11 @@ def login_user(request) -> JsonResponse:
         )
         return JsonResponse(data={"error": "Invalid JSON data"}, status=400)
     # Try to validate user
-    user = authenticate(request, username=username, password=password)
+    user = authenticate(
+        request, username=json_data.username, password=json_data.password
+    )
     if not user:
-        LOGGER.debug("Login failed username=%s", username)
+        LOGGER.debug("Login failed username=%s", json_data.username)
         return JsonResponse({"error": "Invalid authentification attempt"}, status=401)
 
     login(request, user)
@@ -189,24 +206,25 @@ def signin_user(request) -> JsonResponse:
 
     # Get user credentials
     try:
-        json_data = json.loads(request.body.decode("utf-8"))
-        username = json_data["username"]
-        password = json_data["password"]
-        LOGGER.debug("Sign in User: %s, Password: %s", username, password)
+        json_data = validation.UserAPI.model_validate_json(request.body.decode("utf-8"))
+        LOGGER.debug(
+            "Sign in User: %s, Password: %s", json_data.username, json_data.password
+        )
 
-    except Exception as e:
+    except PydanticValidationError as e:
         LOGGER.error(
             "Can not parse signin request, %s, error:%s",
             request.body.decode("utf-8"),
             e,
         )
         return JsonResponse({"error": "Invalid JSON data"}, status=400)
-    # Add new user to the database
-    # TODO sanitation and validation pydantic https://stackoverflow.com/questions/16861/sanitising-user-input-using-python
+    # Add new user to the database.
     try:
-        new_user = User.objects.create_user(username=username, password=password)
+        new_user = User.objects.create_user(
+            username=json_data.username, password=json_data.password
+        )
         login(request, new_user)
-        LOGGER.debug("Create new user: %s", username)
+        LOGGER.debug("Create new user: %s", json_data.username)
         return JsonResponse({"success": f"Create new user: {new_user.username}"})
     except Exception as e:
         LOGGER.error("Can not create new user: %s", e)

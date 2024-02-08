@@ -157,7 +157,7 @@ async function setAsanaToken (token) {
         'X-CSRFToken': getCookie('csrftoken')
       },
       credentials: 'same-origin',
-      body: JSON.stringify(token)
+      body: JSON.stringify({ api_key: token })
     })
     if (!response.ok) {
       console.log('Error with setAsanaToken response: ' + response.status)
