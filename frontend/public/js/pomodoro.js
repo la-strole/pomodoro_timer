@@ -118,6 +118,7 @@ const asanaDomElements = {
 
   hideTaskTag: function () {
     this.taskName_tag.style.display = 'none'
+    this.taskNameCompleteButton.style.display = 'none'
   },
 
   deleteTaskTag: function () {
@@ -155,6 +156,7 @@ const asanaDomElements = {
           // Show the task tag if it is not empty.
           if (taskData.dataset.id !== 'null') {
             asanaDomElements.showtaskTag()
+            asanaDomElements.taskNameCompleteButton.style.display = 'block'
           } else {
             asanaDomElements.hideTaskTag()
           }

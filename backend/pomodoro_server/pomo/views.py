@@ -145,7 +145,6 @@ def set_task_complited(request) -> JsonResponse:
             gid=json_data.task_id,
             name=json_data.task_name,
             complited=True,
-            default={"complited": True},
         )
     except (
         MultipleObjectsReturned,
