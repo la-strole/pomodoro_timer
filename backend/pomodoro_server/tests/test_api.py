@@ -3,12 +3,16 @@ import json
 from django.contrib.auth.models import User
 from django.test import TestCase
 from pomo.helper_cryptography import decrypt, encrypt
-from pomo.models import AsanaApiKey
+from pomo.models import AsanaApiKey, Tasks
+
+TEST_PASSWORD = "pfeif34de123Fr"
+PATH_ASANA_API = "/backend/api/asana"
+PATH_POMO_API = "/backend/api/pomo"
 
 
 class TestCryptography(TestCase):
     """
-    Test fernet encryption and decryption with fernet for API keys in database.
+    Test Fernet encryption and decryption for API keys stored in the database.
     """
 
     def test_encryption_decryption(self) -> None:
@@ -23,7 +27,7 @@ class TestCryptography(TestCase):
         test_database_record = AsanaApiKey(user=user, api_key=encrypted_key)
         test_database_record.save()
 
-        # Get encrypted api key from database
+        # Retrieve the encrypted API key from the database.
         encrypted_key = AsanaApiKey.objects.get(user=user).api_key
 
         decrypted_plain_text = decrypt(encrypted_key)
@@ -37,18 +41,22 @@ class TestAsanaAPI(TestCase):
     """
 
     def setUp(self) -> None:
-        # Create a user for testing
+        # Create a user for testing.
         self.user = User.objects.create_user(
-            username="testuser", password="testpassword"
+            username="testuser", password="pfeif34de123Fr"
         )
 
     def test_post_asana_api_authorized_user(self) -> None:
         """
         Try to post an asana API key with authorized user.
         """
-        # Authenticate the test client with the user's credentials
-        self.client.login(username="testuser", password="testpassword")
-        response = self.client.post(path="/api/asana", data={"api_key": "testkey"})
+        # Authenticate the test client with the user's credentials.
+        self.client.login(username="testuser", password=TEST_PASSWORD)
+        response = self.client.post(
+            path=PATH_ASANA_API,
+            content_type="application/json",
+            data={"api_key": "testkey"},
+        )
         self.assertEqual(
             response.status_code,
             200,
@@ -59,9 +67,11 @@ class TestAsanaAPI(TestCase):
         """
         Try to post an asana API key with authorized user with blank API key.
         """
-        # Authenticate the test client with the user's credentials
-        self.client.login(username="testuser", password="testpassword")
-        response = self.client.post(path="/api/asana", data={"api_key": ""})
+        # Authenticate the test client with the user's credentials.
+        self.client.login(username="testuser", password=TEST_PASSWORD)
+        response = self.client.post(
+            path=PATH_ASANA_API, content_type="application/json", data={"api_key": ""}
+        )
         self.assertEqual(
             response.status_code,
             400,
@@ -72,10 +82,10 @@ class TestAsanaAPI(TestCase):
         """
         Try to post an asana API key with authorized user without API key.
         """
-        # Authenticate the test client with the user's credentials
-        self.client.login(username="testuser", password="testpassword")
+        # Authenticate the test client with the user's credentials.
+        self.client.login(username="testuser", password=TEST_PASSWORD)
         response = self.client.post(
-            path="/api/asana", data={"not_api_key": "some text"}
+            path=PATH_ASANA_API, data={"not_api_key": "some text"}
         )
         self.assertEqual(
             response.status_code,
@@ -87,9 +97,13 @@ class TestAsanaAPI(TestCase):
         """
         Try to make POST request as authorized user with already saved API key.
         """
-        # Authenticate the test client with the user's credentials
-        self.client.login(username="testuser", password="testpassword")
-        response = self.client.post(path="/api/asana", data={"api_key": "NEW_testkey"})
+        # Authenticate the test client with the user's credentials.
+        self.client.login(username="testuser", password=TEST_PASSWORD)
+        response = self.client.post(
+            path=PATH_ASANA_API,
+            content_type="application/json",
+            data={"api_key": "NEW_testkey"},
+        )
         self.assertEqual(
             response.status_code,
             200,
@@ -101,7 +115,11 @@ class TestAsanaAPI(TestCase):
         Try to make POST request as unauthorized user.
         """
         self.client.logout()
-        response = self.client.post(path="/api/asana", data={"api_key": "some text"})
+        response = self.client.post(
+            path=PATH_ASANA_API,
+            content_type="application/json",
+            data={"api_key": "some text"},
+        )
         self.assertEqual(
             response.status_code,
             302,
@@ -112,24 +130,24 @@ class TestAsanaAPI(TestCase):
         """
         Get asana API key from authenticated user (user has api key in database).
         """
-        # Add encrypted api key to database
+        # Add encrypted api key to database.
         plain_api_key = "test_api_key"
         record = AsanaApiKey(user=self.user, api_key=encrypt(plain_api_key))
         record.save()
 
-        # Authenticate the test client with the user's credentials
-        self.client.login(username="testuser", password="testpassword")
-        response = self.client.get(path="/api/asana")
+        # Authenticate the test client with the user's credentials.
+        self.client.login(username="testuser", password=TEST_PASSWORD)
+        response = self.client.get(path=PATH_ASANA_API)
         self.assertEqual(
             response.status_code,
             200,
             "Can not get asana API key from authenticated user with GET request.",
         )
 
-        # Get the raw JSON data as bytes from the JsonResponse
+        # Get the raw JSON data as bytes from the JsonResponse.
         json_data = response.content
 
-        # Parse the JSON data to a Python dictionary
+        # Parse the JSON data to a Python dictionary.
         parsed_data = json.loads(json_data.decode("utf-8"))
 
         self.assertEqual(parsed_data.get("api_key"), plain_api_key)
@@ -138,7 +156,7 @@ class TestAsanaAPI(TestCase):
         """
         Try to get asana API key from unauthenticated user.
         """
-        response = self.client.get(path="/api/asana")
+        response = self.client.get(path=PATH_ASANA_API)
         self.assertEqual(
             response.status_code,
             302,
@@ -150,8 +168,8 @@ class TestAsanaAPI(TestCase):
         Try to get asana API with authorized user, \
         but there are not api key for this user in database.
         """
-        self.client.login(username="testuser", password="testpassword")
-        response = self.client.get(path="/api/asana")
+        self.client.login(username="testuser", password=TEST_PASSWORD)
+        response = self.client.get(path=PATH_ASANA_API)
         self.assertEqual(
             response.status_code,
             404,
@@ -167,31 +185,26 @@ class TestPomoRecords(TestCase):
     """
 
     def setUp(self) -> None:
-        # Create a user for testing
+        # Create a user for testing.
         self.user = User.objects.create_user(
-            username="testuser", password="testpassword"
+            username="testuser", password=TEST_PASSWORD
         )
 
-        # Create test data for pomo record
+        # Create test data for pomo record.
         self.data = {
-            "task": {
-                "task_gid": "100500",
-                "task_name": "test_task",
-                "complited": "False",
-                "created_at": "2023-10-01 14:03:31",
-            },
-            "pomo_records": {
-                "time_spent": "10",
-                "full_pomo": "False",
-                "pomo_in_row": "1",
-            },
+            "pomo": {"isFullPomo": True, "pomoInRow": 2},
+            "tasksList": [
+                {"taskId": "100500", "taskName": "test task", "timeSpent": 600},
+            ],
         }
 
     def test_post_pomo_record_unauthenticated_user(self) -> None:
         """
         Try to POST data from unauthenticated user.
         """
-        response = self.client.post(path="/api/pomo", data=self.data)
+        response = self.client.post(
+            path=PATH_POMO_API, content_type="application/json", data=self.data
+        )
         self.assertEqual(
             response.status_code,
             302,
@@ -203,12 +216,12 @@ class TestPomoRecords(TestCase):
         """
         Authenticated user POST pomo records to database.
         """
-        self.client.login(username="testuser", password="testpassword")
+        self.client.login(username="testuser", password=TEST_PASSWORD)
 
         json_data = json.dumps(self.data)
 
         response = self.client.post(
-            path="/api/pomo", data=json_data, content_type="application/json"
+            path=PATH_POMO_API, data=json_data, content_type="application/json"
         )
         self.assertEqual(
             response.status_code,
@@ -218,14 +231,14 @@ class TestPomoRecords(TestCase):
         )
         self.assertEqual(
             response.json().get("message"),
-            "JSON data processed successfully",
+            "Pomo record JSON data processed successfully",
         )
 
     def test_get_pomo_record_unauthenticated_user(self) -> None:
         """
         Try to get pomo record from database without authentication.
         """
-        response = self.client.get(path="/api/pomo")
+        response = self.client.get(path=PATH_POMO_API)
         self.assertEqual(
             response.status_code,
             302,
@@ -234,13 +247,49 @@ class TestPomoRecords(TestCase):
 
     def test_get_pomo_record_authenticated_user(self) -> None:
         """
-        Get pomo record from database as JSON string with authenticated uesr.
+        Try to Get pomo record from database as JSON string with authenticated uesr.
+        POST requests only allowed.
         """
-        self.client.login(username="testuser", password="testpassword")
+        self.client.login(username="testuser", password=TEST_PASSWORD)
 
-        response = self.client.get(path="/api/pomo")
+        response = self.client.get(path=PATH_POMO_API)
         self.assertEqual(
             response.status_code,
-            200,
-            "Unexpected behaviour. Authenicated user can't get pomo JSON string.",
+            405,
+            "Unexpected behaviour. Authenicated user can get pomo JSON string.",
         )
+
+
+class TestSetTaskCompleted(TestCase):
+    """
+    Test suite for the completed task API.
+    """
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user("testuser", password=TEST_PASSWORD)
+        self.task = Tasks.objects.create(
+            gid="12345", user=self.user, name="testtask", comleted=True
+        )
+
+    def test_set_task_completed_unauthorized(self):
+        """
+        Attempt to POST data from an unauthenticated user.
+        """
+        response = self.client.post(
+            path=PATH_POMO_API, content_type="application/json", data=self.data
+        )
+        self.assertEqual(
+            response.status_code,
+            302,
+            "Unexpected behaviour. Django doesn't redirect unauthenticated users "
+            f"when they try to post pomo records. Response code = {response.status_code}",
+        )
+
+    def test_set_task_completed_new_task(self):
+        pass
+
+    def test_set_task_completed_existed_task(self):
+        pass
+
+    def test_set_task_completed_existed_gid_other_user(self):
+        pass

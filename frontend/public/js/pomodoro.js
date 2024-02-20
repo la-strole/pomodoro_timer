@@ -220,6 +220,8 @@ function sendPomoRecord () {
   }
 }
 
+// This function overrides the timer class's changeDisplay function and runs every second.
+// It is also executed when the timer is initiated.
 function runningTimerDisplays () {
   // Always modify the document title and adjust the Pomodoro time.
   document.title = `${helpers.formatedTime(t.timer_state.minutes)}:${helpers.formatedTime(t.timer_state.seconds)}`
@@ -358,7 +360,7 @@ function addTreeToGarden () {
           </div>
       `
   document.getElementById('garden').appendChild(gardenTree)
-  console.log('Add tree to the garden')
+  console.log('Add tree to the garden.')
 }
 
 function anonimousState () {
@@ -390,7 +392,7 @@ function userState (username, asanaTasksList) {
 }
 
 async function completeTaskButtonClick () {
-  console.log('Task completed')
+  console.log('Task completed.')
 
   // 0. Save information about the task to send it to servers.
   const taskGID = asanaDomElements.taskName_tag.dataset.id
@@ -418,7 +420,7 @@ async function completeTaskButtonClick () {
   // 3 Refresh/update the task list.
   // 3.1 Retrieve Asana tasks.
   const tasks = await api.getAsanaTasksforUser()
-  console.log('Tasks updated')
+  console.log('Tasks updated.')
   // 3.2 Modify the DOM.
   asanaDomElements.updateTasksListDropdownMenu(tasks)
   // 4 Display the task table for reviewing new tasks.
@@ -461,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const swichState = document.getElementById('breaks')
     t.timer_init.pomo_session = swichState.checked
     timeStep = Math.floor((t.timer_init.m * 60) / 25)
-    console.log('Settings updated')
+    console.log('Settings updated.')
     settingsOffcanvas.hide()
     if (swichState.checked) {
       displayElements.showPomoInRowCount()
@@ -470,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     displayElements.minute_tag.innerHTML = helpers.formatedTime(t.timer_init.m) + ':'
     displayElements.second_tag.innerHTML = '00'
-    console.log('Offcanvas confirmed')
+    console.log('Offcanvas confirmed.')
   })
 
   // 1. Verify whether the user is already signed in.
@@ -564,7 +566,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Transmit the Asana Personal Access Token (PAT) to the server.
       const asanaResponse = await api.setAsanaToken(asanaPatData)
       if (asanaResponse === 0) {
-        console.log('Successfully sent Asana PAT')
+        console.log('Successfully sent Asana PAT.')
         // 4.4 Update the DOM with Asana tasks.
         // Retrieve Asana tasks.
         const asanaTasks = await api.getAsanaTasks(formData.get('asanaAPI'))

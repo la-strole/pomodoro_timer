@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-# Create your models here.
 class Tasks(models.Model):
     """
     A list of tasks from the Asana.
@@ -14,7 +13,7 @@ class Tasks(models.Model):
         verbose_name="Task ID",
         name="gid",
         primary_key=True,
-        help_text="Globally unique identifier of the resource, as a string.",
+        help_text="Globally unique identifier of the resource, as a string",
         max_length=128,
     )
 
@@ -22,7 +21,7 @@ class Tasks(models.Model):
         verbose_name="Task name", name="name", max_length=128, blank=False
     )
 
-    complited = models.BooleanField(
+    completed = models.BooleanField(
         verbose_name="Is task complited",
         name="complited",
         blank=False,
@@ -54,7 +53,7 @@ class AsanaApiKey(models.Model):
         editable=False,
     )
 
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name="asana_api_key",
@@ -113,6 +112,7 @@ class TaskRecords(models.Model):
         return f"Task Record: {self.user}:{self.task}"
 
     class Meta:
+        # Indexes to include in the database:
         indexes = [models.Index(fields=["date"])]
 
 

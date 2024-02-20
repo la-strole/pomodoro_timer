@@ -32,7 +32,7 @@ Table TaskRecords {
     time_spent PositiveIntegerField [note: 'spent time', not null]
 }
 
-Ref: AsanaApiKey.user > User.id [delete: cascade]
+Ref: AsanaApiKey.user - User.id [delete: cascade]
 Ref: PomoRecords.user > User.id [delete: cascade]
 Ref: TaskRecords.task > Tasks.gid [delete: cascade]
 Ref: TaskRecords.user > User.id [delete: cascade]

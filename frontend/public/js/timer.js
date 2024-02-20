@@ -32,14 +32,14 @@ class TimerClass {
 
   timer () {
     if (!this.timer_control.pause_flag && !this.timer_control.stop_flag) {
-      // Timer stopped by time.
+      // The timer stopped due to reaching the designated time.
       if (this.timer_state.minutes === 0 && this.timer_state.seconds === 0) {
         if (!this.timer_init.pomo_session) {
           this.timer_state.is_full_pomo = true
           this.stop_timer()
         } else {
-          console.log('Timer stopped by time and autorun by pomo_session')
-          // It was pomo time.
+          console.log('Timer stopped by time and autorun by pomo_session.')
+          // It was Pomodoro time.
           if (this.timer_control.breaking_flag) {
             this.timer_state.is_full_pomo = true
             this.timer_state.pomo_session_count++
@@ -69,7 +69,7 @@ class TimerClass {
   }
 
   start_timer () {
-    console.log('Start timer')
+    console.log('Start timer.')
     this.timer_control.stop_flag = false
     this.timer_control.breaking_flag = true
     this.timer_state.pomo_time_start = new Date()
@@ -86,7 +86,7 @@ class TimerClass {
     this.timer_control.stop_flag = true
     this.timer_control.pause_flag = false
     this.initiate_timer(this.timer_init.m, this.timer_init.s, this.timer_init.pomo_session)
-    console.log('Timer stopped')
+    console.log('Timer stopped.')
     return true
   }
 
@@ -94,12 +94,12 @@ class TimerClass {
     this.timer_control.pause_flag = true
     clearInterval(this.timer_state.timer_id)
     this.timer_state.timer_id = false
-    console.log('Timer paused')
+    console.log('Timer paused.')
     return true
   }
 
   resume_timer () {
-    console.log('Timer resumed')
+    console.log('Timer resumed.')
     this.timer_control.pause_flag = false
     const TimerId = setInterval(() => { this.timer() }, 1000)
     this.timer_state.timer_id = TimerId
@@ -107,7 +107,7 @@ class TimerClass {
   }
 
   initiate_timer (minutes, seconds, pomoSession) {
-    // If it was pomo time.
+    // If was Pomodoro time.
     if (this.timer_control.breaking_flag) {
       this.timer_state.pomo_time_end = new Date()
       this.timer_history.push(
@@ -127,7 +127,6 @@ class TimerClass {
     this.timer_init.pomo_session = pomoSession
     this.play_sound()
     this.change_display()
-    // Run time stop - time begin.
     return true
   }
 

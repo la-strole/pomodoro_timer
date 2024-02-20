@@ -7,7 +7,7 @@ export {
   markTaskComplitedAsanaServer, markTaskComplitedBackend, sendPomoRecord
 }
 
-// Set the real path in production
+// TODO Set the real path in production
 const BASE_URL = 'http://127.0.0.1:8888/backend/api/'
 const LOGIN_URL = BASE_URL + 'auth/login'
 const LOGOUT_URL = BASE_URL + 'auth/logout'
@@ -42,13 +42,13 @@ async function signin (signinData) {
       body: bodyData
     })
     if (!response.ok) {
-      console.log('signin API response error: ' + response.status)
+      console.log('Sign-in API response error: ' + response.status)
       return -1
     }
-    console.log('signin API successfull')
+    console.log('Sign-in API successful')
     return 0
   } catch (error) {
-    console.error('signin API Error:', error)
+    console.error('Sign-in API error:', error)
     return -1
   }
 }
@@ -56,7 +56,7 @@ async function signin (signinData) {
 async function login (loginData) {
   // Authenticate the user on the server using the provided credentials.
 
-  // Get CSRF token
+  // Get CSRF token.
   await getCsrfToken()
 
   try {
@@ -70,13 +70,13 @@ async function login (loginData) {
       body: bodyData
     })
     if (!response.ok) {
-      console.log('login API response error: ' + response.status)
+      console.log('Login API response error: ' + response.status)
       return -1
     }
-    console.log('login API successfull')
+    console.log('Login API successful.')
     return 0
   } catch (error) {
-    console.error('login API Error:', error)
+    console.error('Login API error:', error)
     return -1
   }
 }
@@ -92,7 +92,7 @@ async function isAuthenificated () {
       console.log('Error with whoami request. Response status: ' + response.status)
       return -1
     }
-    console.log('WHOAMI API successfull')
+    console.log('WHOAMI API successfull.')
     // Verify if the user is authenticated.
     const responseData = await response.json()
     // Retrieve the status.
@@ -102,10 +102,10 @@ async function isAuthenificated () {
       console.log('WHOAMI API. User is authenticated as ' + username)
       return username
     }
-    console.log('WHOAMI API. User is not authenificated')
+    console.log('WHOAMI API. User is not authenificated.')
     return 0
   } catch (error) {
-    console.log('Error in whoami API.' + error)
+    console.log('Error with whoami API.' + error)
     return -1
   }
 }
@@ -115,14 +115,14 @@ async function getCsrfToken () {
   try {
     const response = await fetch(GETCSRFTOKEN_URL)
     if (!response.ok) {
-      console.log('Could not get CSRF token')
+      console.log('Could not get CSRF token.')
       return -1
     }
 
-    console.log('CSRF token API successfull')
+    console.log('CSRF token API successfull.')
     return 0
   } catch (error) {
-    console.log('CSRF token api error')
+    console.log('CSRF token API error.')
     return -1
   }
 }
@@ -138,10 +138,10 @@ async function logout () {
       console.log('Error with logout request. Response status: ' + response.status)
       return -1
     }
-    console.log('Logout API successfull')
+    console.log('Logout API successfull.')
     return 0
   } catch (error) {
-    console.log('Error in logout API.' + error)
+    console.log('Error with logout API ' + error)
     return -1
   }
 }
@@ -166,7 +166,7 @@ async function setAsanaToken (token) {
 
     const jsonData = await response.json()
     if (jsonData.success) {
-      console.log('ASANA API successfull')
+      console.log('ASANA API successfull.')
       return 0
     }
     console.log('ASANA API server error: ' + jsonData.error)
@@ -188,13 +188,14 @@ async function getAsanaToken () {
       credentials: 'same-origin'
     })
     if (!response.ok) {
-      console.log('Asana get token error. Response status: ' + response.status)
+      console.log(`Error encountered while attempting to get the Asana token. 
+      Response status: ${response.status}`)
       return -1
     }
     const data = await response.json()
     return data.api_key
   } catch (error) {
-    console.log('Error in asana get token API. Error: ' + error)
+    console.log('Error occurred in the Asana get token API. Error: ' + error)
     return -1
   }
 }
@@ -248,7 +249,8 @@ async function getAsanaUserTaskList (token, workspaceId) {
 async function getAsanaTasksFromTasklist (token, userTaskListGid) {
   // Retrieve tasks from a user's task list.
   // https://developers.asana.com/reference/getusertasklistforuser
-  const url = `${ASANABASEURL}/user_task_lists/${userTaskListGid}/tasks?${new URLSearchParams({ completed_since: 'now' })}`
+  const url = `${ASANABASEURL}/user_task_lists/${userTaskListGid}/
+  tasks?${new URLSearchParams({ completed_since: 'now' })}`
   try {
     const response = await fetch(url, {
       headers: {
@@ -257,13 +259,15 @@ async function getAsanaTasksFromTasklist (token, userTaskListGid) {
       }
     })
     if (!response.ok) {
-      console.log('Error with asana API get tasks from tasklist. Response status: ' + response.status)
+      console.log(`Error encountered with the Asana API 
+      while attempting to get tasks from a task list. Response status: ${response.status}`)
       return -1
     }
     const jsonData = await response.json()
     return jsonData
   } catch (error) {
-    console.log('Error with asana API get asana task from task list. error: ' + error)
+    console.log(`Error encountered with the Asana API 
+      while attempting to get tasks from a task list. Response status: ${error}`)
     return -1
   }
 }
@@ -323,13 +327,13 @@ async function markTaskComplitedAsanaServer (taskGID) {
       body: JSON.stringify({ data: { completed: true } })
     })
     if (!response.ok) {
-      console.log('Can not set task as complited with asana server')
+      console.log('Unable to set task as completed with the Asana server.')
       return -1
     }
-    console.log('Successfully mark task as complited on asana server')
+    console.log('Successfully mark task as completed on Asana server.')
     return 0
   } catch (error) {
-    console.log('Error with asana API - complited task.' + error)
+    console.log('Error with asana API - completed task.' + error)
     return -1
   }
 }
@@ -347,13 +351,14 @@ async function markTaskComplitedBackend (taskGID, taskName) {
       body: JSON.stringify({ task_id: taskGID, task_name: taskName })
     })
     if (!response.ok) {
-      console.log('Mark task complited backend failed. Response: ' + response.status)
+      console.log('Backend failed to mark task as completed. Response: ' + response.status)
       return -1
     }
-    console.log('Successfully mark task on backend as complited')
+    console.log('Successfully marked task on backend as completed.')
     return 0
   } catch (error) {
-    console.log('Mark task complited backend api error.' + error)
+    console.log(`Backend API error encountered while attempting 
+    to mark task as completed. Error: ${error}`)
     return -1
   }
 }
@@ -371,7 +376,7 @@ async function sendPomoRecord (taskHistoryList) {
       body: JSON.stringify(taskHistoryList)
     })
     if (!response.ok) {
-      console.log('Error with pomo record response: ' + response.status)
+      console.log('Error encountered with Pomodoro record response: ' + response.status)
       return -1
     }
 
@@ -380,10 +385,10 @@ async function sendPomoRecord (taskHistoryList) {
       console.log(jsonData.message)
       return 0
     }
-    console.log('Pomo record server error: ' + jsonData.error)
+    console.log('Pomodoro record server error occurred: ' + jsonData.error)
     return -1
   } catch (error) {
-    console.log('Pomo record error: ' + error)
+    console.log('Pomo record error occurred: ' + error)
     return -1
   }
 }

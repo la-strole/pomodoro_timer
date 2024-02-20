@@ -6,9 +6,9 @@ urlpatterns = [
     path(route="asana", view=views.asana_api_key, name="asana"),
     path(route="pomo", view=views.pomo_records, name="pomo"),
     path(
-        route="set_task_complited",
-        view=views.set_task_complited,
-        name="set_task_complited",
+        route="set_task_completed",
+        view=views.set_task_completed,
+        name="set_task_completed",
     ),
     path(route="auth/login", view=views.login_user, name="login_user"),
     path(route="auth/signin", view=views.signin_user, name="signin_user"),

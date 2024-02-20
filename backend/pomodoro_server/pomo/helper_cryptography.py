@@ -1,5 +1,5 @@
 """
-Helper module for cryptographic operations
+Helper module for cryptographic operations.
 """
 
 import logging
@@ -13,9 +13,9 @@ LOGGER = logging.getLogger(name="cryptography")
 FERNET_KEY = str.encode("a4TlcAz54IpTpey37nN2NZ3TS-Rb4KZp2mpJhpeGhgA=")
 
 if not FERNET_KEY:
-    msg = "Can not find FERNET_KEY in environment variables"
-    LOGGER.error(msg)
-    raise ValueError(msg)
+    MSG = "Unable to locate the FERNET_KEY in the environment variables."
+    LOGGER.error(MSG)
+    raise ValueError(MSG)
 
 
 def genereate_key() -> bytes:
