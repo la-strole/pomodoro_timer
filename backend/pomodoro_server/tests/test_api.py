@@ -8,6 +8,7 @@ from pomo.models import AsanaApiKey, Tasks
 TEST_PASSWORD = "pfeif34de123Fr"
 PATH_ASANA_API = "/backend/api/asana"
 PATH_POMO_API = "/backend/api/pomo"
+PATH_TASKS_API = "/backend/api/set_task_completed"
 
 
 class TestCryptography(TestCase):
@@ -267,16 +268,16 @@ class TestSetTaskCompleted(TestCase):
 
     def setUp(self) -> None:
         self.user = User.objects.create_user("testuser", password=TEST_PASSWORD)
-        self.task = Tasks.objects.create(
-            gid="12345", user=self.user, name="testtask", comleted=True
-        )
 
     def test_set_task_completed_unauthorized(self):
         """
         Attempt to POST data from an unauthenticated user.
         """
+        self.client.logout()
         response = self.client.post(
-            path=PATH_POMO_API, content_type="application/json", data=self.data
+            path=PATH_TASKS_API,
+            content_type="application/json",
+            data={"task_id": 222222, "task_name": "someTask"},
         )
         self.assertEqual(
             response.status_code,
@@ -285,11 +286,61 @@ class TestSetTaskCompleted(TestCase):
             f"when they try to post pomo records. Response code = {response.status_code}",
         )
 
-    def test_set_task_completed_new_task(self):
-        pass
+    def test_set_task_completed_new_task(self) -> None:
+        """
+        Attempt to POST data from the authenticated user. The new task.
+        """
+        json_payload = {"task_id": 111111, "task_name": "newtaskName"}
+        self.client.login(username="testuser", password=TEST_PASSWORD)
+        response = self.client.post(
+            path=PATH_TASKS_API, content_type="application/json", data=json_payload
+        )
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+        task_object = Tasks.objects.filter(user=self.user, gid=json_payload["task_id"])
+        self.assertTrue(task_object[0].completed)
+        self.assertIsNotNone(task_object)
+        self.client.logout()
 
     def test_set_task_completed_existed_task(self):
-        pass
+        """
+        Attempt to POST data from the authenticated user. Existing task.
+        """
+        TASKGID = "2222222"
+        TASKNAME = "taskName"
+        Tasks.objects.create(user=self.user, gid=TASKGID, name=TASKNAME)
+        json_payload = {"task_id": TASKGID, "task_name": TASKNAME}
+        self.client.login(username="testuser", password=TEST_PASSWORD)
+        response = self.client.post(
+            path=PATH_TASKS_API, content_type="application/json", data=json_payload
+        )
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+        task_object = Tasks.objects.filter(user=self.user, gid=json_payload["task_id"])
+        self.assertTrue(task_object[0].completed)
+        self.assertIsNotNone(task_object)
+        self.client.logout()
 
     def test_set_task_completed_existed_gid_other_user(self):
-        pass
+        """
+        Attempt to POST data from another authenticated user. Existing task.
+        """
+        TASKGID = "3333333"
+        TASKNAME = "AnothertaskName"
+        ANOTHERPASSWD = "jfp5r43$f4fe3"
+        Tasks.objects.create(user=self.user, gid=TASKGID, name=TASKNAME)
+        User.objects.create_user("anotheruser", password=ANOTHERPASSWD)
+        json_payload = {"task_id": TASKGID, "task_name": TASKNAME}
+        self.client.login(username="anotheruser", password=ANOTHERPASSWD)
+        response = self.client.post(
+            path=PATH_TASKS_API, content_type="application/json", data=json_payload
+        )
+        self.assertEqual(
+            response.status_code,
+            500,
+        )
+        self.client.logout()

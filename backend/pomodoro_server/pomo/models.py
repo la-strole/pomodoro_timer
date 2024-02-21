@@ -22,8 +22,8 @@ class Tasks(models.Model):
     )
 
     completed = models.BooleanField(
-        verbose_name="Is task complited",
-        name="complited",
+        verbose_name="Is task completed",
+        name="completed",
         blank=False,
         default=False,
     )

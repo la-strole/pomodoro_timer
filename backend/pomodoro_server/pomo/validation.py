@@ -72,12 +72,20 @@ class TaskComplitedAPI(BaseModel):
 
     task_id: Union[PositiveInt, Literal["null"]]
 
+    @field_validator("task_id")
+    @classmethod
+    def update_datatype(cls, v):
+        """
+        Update the completed task record id datatype to string.
+        """
+        return str(v) if isinstance(v, int) else v
+
     task_name: str
 
     @field_validator("task_name")
     @classmethod
     def update_empty_name(cls, v):
-        """ "
+        """
         Check if the task name has more than 0 characters,
         or update it to an empty task name.
         """

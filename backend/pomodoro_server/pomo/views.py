@@ -130,6 +130,7 @@ def pomo_records(request) -> JsonResponse:
     return JsonResponse({"message": "Pomo record JSON data processed successfully"})
 
 
+@login_required
 @require_POST
 def set_task_completed(request) -> JsonResponse:
     """
@@ -147,33 +148,47 @@ def set_task_completed(request) -> JsonResponse:
         return JsonResponse({"error": "Invalid request JSON object"}, status=500)
 
     # Retrieve task from the database or create it if it does not exist.
-    try:
-        task, created = models.Tasks.objects.update_or_create(
-            user=request.user,
-            gid=json_data.task_id,
-            name=json_data.task_name,
-            completed=True,
-        )
-    except (
-        MultipleObjectsReturned,
-        IntegrityError,
-        ValidationError,
-        TypeError,
-    ) as e:
-        msg = (
-            f"Database error while setting task as complite. user: {request.user}, {e}"
-        )
-        LOGGER.warning(msg)
-        return JsonResponse({"error": "Invalid request"}, status=500)
+    tasks = models.Tasks.objects.filter(user=request.user, gid=json_data.task_id)
+    if not tasks:
+        # Attempt to create the task.
+        try:
+            models.Tasks.objects.create(
+                gid=json_data.task_id,
+                name=json_data.task_name,
+                completed=True,
+                user=request.user,
+            )
+            LOGGER.debug(
+                "Successfully create task %s and marked it as completed.",
+                json_data.task_name,
+            )
+            return JsonResponse({"success": True})
 
-    if not created:
-        LOGGER.debug("Successfully marked task %s as completed.", task.name)
+        except (IntegrityError, ValidationError, TypeError) as e:
+            LOGGER.warning(
+                "Database error while creating task as complite. user: %s, task: %s, error: %s",
+                request.user,
+                json_data.task_name,
+                e,
+            )
+            return JsonResponse({"error": "Invalid request"}, status=500)
     else:
-        LOGGER.debug(
-            "Successfully create task %s and marked it as completed.",
-            task.name,
-        )
-    return JsonResponse({"success": True})
+        try:
+            assert tasks.count() == 1
+            tasks[0].completed = True
+            tasks[0].save()
+            LOGGER.debug(
+                "Successfully marked task %s as completed.", json_data.task_name
+            )
+            return JsonResponse({"success": True})
+        except (IntegrityError, TypeError, ValidationError, AssertionError) as e:
+            LOGGER.warning(
+                "Database error while setting task as complite. user: %s, task: %s, error: %s",
+                request.user,
+                json_data.task_name,
+                e,
+            )
+            return JsonResponse({"error": "Invalid request"}, status=500)
 
 
 @require_POST
@@ -243,6 +258,7 @@ def get_csrf_token(request) -> JsonResponse:
     return JsonResponse({"success": "Send CSRF token"})
 
 
+@login_required
 @require_GET
 def logout_user(request) -> JsonResponse:
     """
