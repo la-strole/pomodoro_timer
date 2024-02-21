@@ -18,7 +18,7 @@ class MyTimer extends timer.TimerClass {
 }
 
 const t = new MyTimer()
-
+window.current_timer = t
 // Time step in seconds to grow the tree.
 let timeStep
 let currentDisplay = '' // 'pomo' or 'break'.
