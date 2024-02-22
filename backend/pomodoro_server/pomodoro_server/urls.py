@@ -16,6 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path
 
 urlpatterns = [
@@ -23,3 +24,6 @@ urlpatterns = [
     path(route="backend/api/", view=include("pomo.urls")),
     path(route="admin/", view=admin.site.urls),
 ]
+
+# Serving Static Files for Admin page with Gunicorn.
+urlpatterns += staticfiles_urlpatterns()
