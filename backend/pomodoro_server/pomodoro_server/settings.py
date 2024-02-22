@@ -10,7 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load environment variables from the .env file.
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,14 +25,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# TODO SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-$bi4g!vdexm$(ve9jd@7@w=r0fu_q%1^h1zj2kz43w^1jbob=*"
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
-# TODO SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv("DJANGO_DEBUG", False)
 
-ALLOWED_HOSTS = ["127.0.0.1:8888", "127.0.0.1"]
-
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
 
 # Application definition
 
@@ -140,16 +145,21 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = "Strict"
 CSRF_COOKIE_SAMESITE = "Strict"
 
-SESSION_COOKIE_SECURE = False  # Make sure to use https on ngnix reverse proxy
-CSRF_COOKIE_SECURE = False  # Make sure to use https on ngnix reverse proxy
+SESSION_COOKIE_SECURE = True  # Make sure to use https on ngnix reverse proxy
+CSRF_COOKIE_SECURE = True  # Make sure to use https on ngnix reverse proxy
 
 SESSION_COOKIE_HTTPONLY = True  # To make JS get access to session cookie
 CSRF_COOKIE_HTTPONLY = False
 
-# TODO change this in production
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8888"]
+# CSRF protection settings
+CSRF_TRUSTED_ORIGINS = list(map(lambda url: f"https://{url}", ALLOWED_HOSTS))
+
+# https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-CONN_MAX_AGE
+CONN_MAX_AGE = 30
 
 # Add logger
+# Get loglevel from env
+LOGLEVEL = os.getenv("DJANGO_LOGLEVEL", "info").upper()
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -161,26 +171,30 @@ LOGGING = {
     },
     "handlers": {
         "file": {
-            "level": "DEBUG",
+            "level": LOGLEVEL,
             "class": "logging.FileHandler",
             "filename": "./debug.log",
+            "formatter": "standard",
+        },
+        "console": {
+            "class": "logging.StreamHandler",
             "formatter": "standard",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["file"],
-            "level": "DEBUG",
+            "handlers": ["file", "console"],
+            "level": LOGLEVEL,
             "propagate": True,
         },
         "cryptography": {
-            "handlers": ["file"],
-            "level": "DEBUG",
+            "handlers": ["file", "console"],
+            "level": LOGLEVEL,
             "propagate": False,
         },
         "pomoAPI": {
-            "handlers": ["file"],
-            "level": "DEBUG",
+            "handlers": ["file", "console"],
+            "level": LOGLEVEL,
             "propagate": False,
         },
     },
