@@ -3,19 +3,19 @@ Helper module for cryptographic operations.
 """
 
 import logging
+import os
 
 from cryptography.fernet import Fernet
 
 LOGGER = logging.getLogger(name="cryptography")
 
-# FERNET_KEY: str | None = os.getenv(key="FERNET_KEY")
-# TODO remove this in production
-FERNET_KEY = str.encode("a4TlcAz54IpTpey37nN2NZ3TS-Rb4KZp2mpJhpeGhgA=")
-
-if not FERNET_KEY:
-    MSG = "Unable to locate the FERNET_KEY in the environment variables."
+try:
+    FERNET_KEY = str.encode(os.getenv(key="FERNET_KEY"))
+    assert len(FERNET_KEY) > 0
+except (TypeError, AssertionError) as e:
+    MSG = f"Unable to locate the FERNET_KEY in the environment variables. {e}"
     LOGGER.error(MSG)
-    raise ValueError(MSG)
+    raise e
 
 
 def genereate_key() -> bytes:
