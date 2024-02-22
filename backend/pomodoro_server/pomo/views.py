@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime
+from datetime import datetime
 
 from cryptography.fernet import InvalidToken
 from django.contrib.auth import authenticate, login, logout
