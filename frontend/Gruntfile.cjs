@@ -2,14 +2,14 @@ module.exports = function (grunt) {
   grunt.initConfig({
 
     eslint: {
-      target: ['public/js/*.js']
+      target: ['pomodoro/public/js/*.js', 'google_charts/js/*.js']
     },
 
     htmlhint: {
       options: {
         htmlhintrc: '.htmlhintrc' // Create an HTMLLint configuration file.
       },
-      src: ['public/*.html']
+      src: ['pomodoro/public/*.html', 'google_charts/*html']
     },
 
     htmlmin: {
@@ -19,20 +19,30 @@ module.exports = function (grunt) {
           collapseWhitespace: true
         },
         files: {
-          'dist/index.min.html': './public/pomodoro.html'
+          'dist/pomodoro/index.min.html': './pomodoro/public/pomodoro.html',
+          'dist/google_charts/index.min.html': './google_charts/index.html'
         }
       }
     },
 
     uglify: {
       my_target: {
-        files: [{
-          expand: true,
-          cwd: './public/js', // Source directory.
-          src: ['**/*.js'], // Match all JavaScript files.
-          dest: 'dist/js', // Output directory.
-          ext: '.js' // Extension for minified files.
-        }]
+        files: [
+          {
+            expand: true,
+            cwd: './pomodoro/public/js', // Source directory.
+            src: ['**/*.js'], // Match all JavaScript files.
+            dest: 'dist/pomodoro/js', // Output directory.
+            ext: '.js' // Extension for minified files.
+          },
+          {
+            expand: true,
+            cwd: './google_charts/js', // Source directory.
+            src: ['**/*.js'], // Match all JavaScript files.
+            dest: 'dist/google_charts/js', // Output directory.
+            ext: '.js' // Extension for minified files.
+          }
+        ]
       }
     }
 
