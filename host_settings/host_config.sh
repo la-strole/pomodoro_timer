@@ -8,7 +8,8 @@ sudo systemctl restart rsyslog
 # We need to compress and rotate older log files on our Docker host
 sudo cp rsyslog-docker_logrotate /etc/logrotate.d/
 
-# Copy additional Nginx configuration
+# Generate and Copy additional Nginx configuration
+./generate_nginx_configuration.sh
 sudo cp pomodoro_nginx.conf /etc/nginx/sites-enabled/
 sudo nginx -t
 echo 'If the Nginx configuration is okay, restart Nginx with sudo systemctl restart nginx.'
