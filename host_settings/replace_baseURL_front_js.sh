@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Read the server_name from pomodoro_nginx.conf
-server_name=$(grep -oP '(?<=server_name\s).+?(?=;)' pomodoro_nginx.conf)
+# Read server_name from settings.json
+server_name=$(grep -oP '(?<="server_name": ")[^"]*' ./settings.json)
 
 # Replace server name in api.js
 sed -i "s|'https://SERVERNAME/|'https://$server_name/|g" ../frontend/google_charts/js/api.js

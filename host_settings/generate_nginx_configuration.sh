@@ -1,8 +1,10 @@
 #!/bin/bash
 
-# Function to generate nginx.conf
-generate_nginx_conf() {
-    cat > pomodoro_nginx.conf <<EOF
+# Read server_name from settings.json
+server_name=$(grep -oP '(?<="server_name": ")[^"]*' ./settings.json)
+
+# Generate pomodoro_nginx.conf
+cat > pomodoro_nginx.conf <<EOF
 server {
     server_name $server_name wwww.$server_name;
 
@@ -37,14 +39,5 @@ server {
     }
 }
 EOF
-}
 
-# Main script starts here
-
-# Prompt user for server_name
-read -p "Enter server_name: " server_name
-
-# Call function to generate nginx.conf
-generate_nginx_conf
-
-echo "nginx.conf generated with server_name: $server_name"
+echo "pomodoro_nginx.conf generated with server_name: $server_name"
