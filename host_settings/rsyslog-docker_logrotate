@@ -1,0 +1,13 @@
+/var/log/docker/*.log
+{
+daily
+rotate 10
+minsize 50M
+missingok
+notifempty
+compress
+sharedscripts
+postrotate
+/usr/lib/rsyslog/rsyslog-rotate
+endscript
+}
