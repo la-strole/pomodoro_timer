@@ -4,7 +4,7 @@
 generate_nginx_conf() {
     cat > pomodoro_nginx.conf <<EOF
 server {
-    server_name $server_name;
+    server_name $server_name wwww.$server_name;
 
     # frontend
     location / {

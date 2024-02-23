@@ -1,6 +1,6 @@
 export { getDailyData, getYearlyData, getTaskData, getTaskList }
 
-const BASEURL = 'http://127.0.0.1:8888/backend/api/details/'
+const BASEURL = 'https://SERVERNAME/backend/api/details/'
 
 async function getDailyData (d = new Date()) {
   // Get the data from the backend server.

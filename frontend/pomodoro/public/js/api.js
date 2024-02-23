@@ -8,7 +8,7 @@ export {
 }
 
 // TODO Set the real path in production
-const BASE_URL = 'http://127.0.0.1:8888/backend/api/'
+const BASE_URL = 'https://SERVERNAME/backend/api/'
 const LOGIN_URL = BASE_URL + 'auth/login'
 const LOGOUT_URL = BASE_URL + 'auth/logout'
 const SIGNIN_URL = BASE_URL + 'auth/signin'
