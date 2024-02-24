@@ -3,6 +3,7 @@
 # Remove the images
 sudo docker container stop pomodoro_frontend
 sudo docker container stop pomodoro_backend
+sleep 5
 sudo docker rmi eugeneparkhom/pomodoro_frontend:1.0.0
 sudo docker rmi eugeneparkhom/pomodoro_backend:1.0.0
 
