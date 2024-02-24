@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Remove the images
+sudo docker container stop pomodoro_frontend
+sudo docker container stop pomodoro_backend
 sudo docker rmi pomodoro_backend:1.0.0
 sudo docker rmi pomodoro_frontend:1.0.0
 

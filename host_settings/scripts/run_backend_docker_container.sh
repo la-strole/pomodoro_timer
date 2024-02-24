@@ -1,6 +1,7 @@
 #!/bin/bash
 
 sudo docker run \
+--name pomodoro_backend \
 --rm \
 -d \
 -p 127.0.0.1:8888:80 \
@@ -8,4 +9,4 @@ sudo docker run \
 --log-driver syslog \
 --log-opt tag=docker/{{.ImageName}} \
 --log-opt syslog-address=unixgram:///dev/log \
-pomodoro_backend:1.0.0
+eugeneparkhom/pomodoro_backend:1.0.0

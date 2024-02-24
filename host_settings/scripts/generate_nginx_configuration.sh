@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Read server_name from settings.json
-server_name=$(grep -oP '(?<="server_name": ")[^"]*' ./settings.json)
+server_name=$(grep -oP '(?<="server_name": ")[^"]*' ../settings.json)
 
 # Generate pomodoro_nginx.conf
-cat > pomodoro_nginx.conf <<EOF
+cat > ../configurations/pomodoro_nginx.conf <<EOF
 server {
     server_name $server_name wwww.$server_name;
 
