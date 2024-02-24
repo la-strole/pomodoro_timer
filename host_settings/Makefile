@@ -4,7 +4,7 @@ install:
 	$(MAKE) run_backend_container
 
 run_frontend_conatainer:
-	./scripts/run_frontend_docker_conatainer.sh
+	./scripts/run_frontend_docker_container.sh
 
 run_backend_container:
 	./scripts/run_backend_docker_container.sh
