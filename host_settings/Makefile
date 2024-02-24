@@ -1,7 +1,7 @@
 install:
 	./scripts/install_project_host_config.sh
-	run_frontend_conatainer
-	run_backend_container
+	$(MAKE) run_frontend_conatainer
+	$(MAKE) run_backend_container
 
 run_frontend_conatainer:
 	./scripts/run_frontend_docker_conatainer.sh
