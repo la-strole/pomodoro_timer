@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Executing entrypoint script"
+# Your script commands here
+
 # Run Django migrations
 python manage.py makemigrations pomo
 python manage.py migrate
