@@ -128,8 +128,12 @@ function drawColumnChart (dataSet, titleName, DomElement) {
     },
     vAxis: {
       format: 'short',
-      0: { title: 'Pomodoro' },
-      1: { title: 'Time (minutes)' }
+      0: {
+        title: 'Pomodoro'
+      },
+      1: {
+        title: 'Time (minutes)'
+      }
     },
     explorer: {
       axis: 'horizontal',
@@ -164,7 +168,9 @@ function drawColumnChartSimple (dataSet, chartTitle = '', DomElement) {
       ticks: data.getDistinctValues(0)
     },
     vAxis: {
-      format: 'short'
+      format: 'short',
+      viewWindow: { min: 0 },
+      minValue: 0
     },
     explorer: {
       axis: 'horizontal',

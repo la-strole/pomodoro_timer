@@ -32,8 +32,10 @@ def asana_api_key(request) -> JsonResponse:
                 request.body.decode("utf-8")
             ).api_key
         except PydanticValidationError as e:
-            error_msg = f"Error encountered during API key validation. \
-                User: {request.user}. Error: {e}"
+            error_msg = (
+                "Error encountered during API key validation."
+                f"User: {request.user}. Error: {e}"
+            )
             LOGGER.warning(error_msg)
             return JsonResponse(
                 {"error": "Invalid JSON data."}, status=400  # Bad request
@@ -42,8 +44,10 @@ def asana_api_key(request) -> JsonResponse:
             # Encrypt the Asana PAT (Personal Access Token) using Fernet.
             encryptes_key = helper_cryptography.encrypt(plaintext=api_key)
         except TypeError as fernet_error:
-            msg = f"Unable to encrypt plain Asana API key with Fernet. \
-                User: {request.user}, error: {fernet_error}"
+            msg = (
+                "Unable to encrypt plain Asana API key with Fernet."
+                f"User: {request.user}, error: {fernet_error}"
+            )
             LOGGER.error(msg)
             return JsonResponse({"error": "Invalid Asana PAT"}, status=500)
         try:
@@ -52,22 +56,34 @@ def asana_api_key(request) -> JsonResponse:
             LOGGER.debug("Successfully added API key for user %s.", request.user)
             return JsonResponse({"success": "JSON data processed successfully"})
         except (IntegrityError, ValidationError, TypeError) as database_error:
-            error_msg = f"Unable to save Asana API key to database. \
-                             User:{request.user}, error: {database_error}"
-
+            error_msg = (
+                "Unable to save Asana API key to database."
+                f"User:{request.user}, error: {database_error}"
+            )
             LOGGER.error(error_msg)
             return JsonResponse({"error": "Invalid asana PAT"}, status=500)
 
     elif request.method == "GET":
         # Retrieve encrypted Asana PAT from database.
-        record = get_object_or_404(models.AsanaApiKey, user=request.user)
+        try:
+            record = models.AsanaApiKey.objects.get(user=request.user)
+        except (
+            models.AsanaApiKey.DoesNotExist,
+            models.AsanaApiKey.MultipleObjectsReturned,
+        ) as e:
+            LOGGER.debug(
+                "Can not find Asana API key for user %s error: %s", request.user, e
+            )
+            return JsonResponse({"error": "Invalid asana PAT"}, status=500)
         encrypted_api_key = record.api_key
         try:
             # Decrypt the Asana PAT with Fernet.
             plain_api_key = helper_cryptography.decrypt(encrypted_api_key)
         except (InvalidToken, TypeError) as fernet_error:
-            msg = f"Can not decrypt asana API key with fernet. \
-                    User:{request.user}, error: {fernet_error}."
+            msg = (
+                "Can not decrypt asana API key with fernet."
+                f"User:{request.user}, error: {fernet_error}."
+            )
             LOGGER.error(msg)
             return JsonResponse({"error": "Invalid asana PAT"}, status=500)
 
@@ -121,8 +137,8 @@ def pomo_records(request) -> JsonResponse:
             TypeError,
         ) as database_error:
             LOGGER.error(
-                "pomo_records: Database error encountered while attempting to get \
-                    or create task or task record: %s",
+                "pomo_records: Database error encountered while attempting to get"
+                "or create task or task record: %s",
                 database_error,
             )
             return JsonResponse({"error": "Invalid pomodoro record"}, status=500)
@@ -148,8 +164,9 @@ def set_task_completed(request) -> JsonResponse:
         return JsonResponse({"error": "Invalid request JSON object"}, status=500)
 
     # Retrieve task from the database or create it if it does not exist.
-    tasks = models.Tasks.objects.filter(user=request.user, gid=json_data.task_id)
-    if not tasks:
+    tasks = models.Tasks.objects.filter(gid=json_data.task_id)
+    user_task = tasks.filter(user=request.user)
+    if not user_task:
         # Attempt to create the task.
         try:
             models.Tasks.objects.create(
@@ -162,6 +179,9 @@ def set_task_completed(request) -> JsonResponse:
                 "Successfully create task %s and marked it as completed.",
                 json_data.task_name,
             )
+            for task in tasks:
+                task.completed = True
+                task.save()
             return JsonResponse({"success": True})
 
         except (IntegrityError, ValidationError, TypeError) as e:
@@ -174,14 +194,14 @@ def set_task_completed(request) -> JsonResponse:
             return JsonResponse({"error": "Invalid request"}, status=500)
     else:
         try:
-            assert tasks.count() == 1
-            tasks[0].completed = True
-            tasks[0].save()
+            for task in tasks:
+                task.completed = True
+                task.save()
             LOGGER.debug(
                 "Successfully marked task %s as completed.", json_data.task_name
             )
             return JsonResponse({"success": True})
-        except (IntegrityError, TypeError, ValidationError, AssertionError) as e:
+        except (IntegrityError, TypeError, ValidationError) as e:
             LOGGER.warning(
                 "Database error while setting task as complite. user: %s, task: %s, error: %s",
                 request.user,
@@ -333,6 +353,8 @@ def daily_activities(request) -> JsonResponse:
         Avg("pomo_count"), Max("pomo_count")
     ).values()
     # Append data to a JSON object for pomo gauge.
+    mean_pomo = mean_pomo if mean_pomo else 0
+    max_pomo = max_pomo if max_pomo else 0
     json_data["pomoGauge"] = [current_pomo_value, round(mean_pomo), max_pomo]
 
     # Find the maximum and mean Pomodoro count in a row.

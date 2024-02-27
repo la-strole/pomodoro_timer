@@ -12,8 +12,7 @@ class Tasks(models.Model):
     gid = models.CharField(
         verbose_name="Task ID",
         name="gid",
-        primary_key=True,
-        help_text="Globally unique identifier of the resource, as a string",
+        help_text="Identifier of the resource, as a string",
         max_length=128,
     )
 

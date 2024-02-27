@@ -71,6 +71,7 @@ class TimerClass {
   start_timer () {
     console.log('Start timer.')
     this.timer_control.stop_flag = false
+    this.timer_control.pause_flag = false
     this.timer_control.breaking_flag = true
     this.timer_state.pomo_time_start = new Date()
     this.timer_state.minutes = this.timer_init.m
@@ -84,7 +85,6 @@ class TimerClass {
     this.timer_state.timer_id = false
     this.timer_state.pomo_session_count = 0
     this.timer_control.stop_flag = true
-    this.timer_control.pause_flag = false
     this.initiate_timer(this.timer_init.m, this.timer_init.s, this.timer_init.pomo_session)
     console.log('Timer stopped.')
     return true

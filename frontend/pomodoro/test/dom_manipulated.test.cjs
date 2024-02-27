@@ -421,7 +421,7 @@ describe('CLIENT-SIDE: Press Stop when the timer is paused during the Pomodoro s
     // Assert timer is running in pomo mode.
     // Perform assertions.
     expect(timerInstance.timer_control.stop_flag).to.be.true
-    expect(timerInstance.timer_control.pause_flag).to.be.false
+    expect(timerInstance.timer_control.pause_flag).to.be.true
     expect(timerInstance.timer_control.breaking_flag).to.be.true
     // Expect the timer to have a start property as a Date object.
     expect(timerInstance.timer_state.pomo_time_start).to.be.false
@@ -490,7 +490,7 @@ describe('CLIENT-SIDE: Press Stop when the timer is paused during the break time
     // Assert that the timer is running in Pomodoro mode.
     // Perform assertions.
     expect(timerInstance.timer_control.stop_flag).to.be.true
-    expect(timerInstance.timer_control.pause_flag).to.be.false
+    expect(timerInstance.timer_control.pause_flag).to.be.true
     expect(timerInstance.timer_control.breaking_flag).to.be.true
     // Expect the timer to have a start property as a Date object.
     expect(timerInstance.timer_state.pomo_time_start).to.be.false

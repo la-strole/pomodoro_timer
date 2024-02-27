@@ -7,18 +7,40 @@ class MyTimer extends timer.TimerClass {
   play_sound = helpers.playSound
   add_tree = addTreeToGarden
   task_history = []
-  addTaskToHistory = function (id, name, startTime, endTime) {
-    this.task_history.push(
-      {
-        taskId: id,
-        taskName: name,
-        time: { start: startTime, end: endTime }
-      })
+  addTaskToHistory = function (taskObject) {
+    this.task_history.push(taskObject)
   }
 }
+const taskOperations = {
+  currentTask: null,
 
+  createTask: function (source) {
+    if (!this.currentTask) {
+      this.currentTask = {
+        taskId: asanaDomElements.taskName_tag.dataset.id,
+        taskName: asanaDomElements.taskName_tag.innerHTML,
+        time: { start: Date.now(), end: null }
+      }
+      console.log(`Start task from ${source}. Current task: ${JSON.stringify(this.currentTask)}. 
+      Task history: ${JSON.stringify(t.task_history)}`)
+    } else {
+      throw new Error(`taskOperations: Can not create new task. Current task is not null. Source: ${source}`)
+    }
+  },
+  finishTask: function (source) {
+    if (this.currentTask !== null) {
+      this.currentTask.time.end = Date.now()
+      t.addTaskToHistory(this.currentTask)
+      console.log(`Finish task from ${source}. Current task: ${JSON.stringify(this.currentTask)}. 
+      Task history: ${JSON.stringify(t.task_history)}`)
+      this.currentTask = null
+    } else {
+      throw new Error(`taskOperations: Can not finish task. Current task is null. Source: ${source}`)
+    }
+  }
+}
 const t = new MyTimer()
-window.current_timer = t
+window.current_timer = t // For testing purposes
 // Time step in seconds to grow the tree.
 let timeStep
 let currentDisplay = '' // 'pomo' or 'break'.
@@ -163,17 +185,10 @@ const asanaDomElements = {
 
           // Include the task's start time in the task history list if the timer is in the running Pomodoro state.
           if (!t.timer_control.stop_flag && t.timer_control.breaking_flag && !t.timer_control.pause_flag) {
-            // Include the task in the task history list.
-            t.addTaskToHistory(
-              asanaDomElements.taskName_tag.dataset.id,
-              asanaDomElements.taskName_tag.innerHTML,
-              Date.now(),
-              null
-            )
-            console.log('Include the task in the history and add the start time to it when a task is clicked from the dropdown Asana task. ' + JSON.stringify(t.task_history))
-            // Assign the end time to the previous task in the task history list if the timer is in the running Pomodoro state.
-            t.task_history.at(-2).time.end = Date.now()
-            console.log('Include the task end time when a task is clicked from the dropdown Asana tasks list .' + JSON.stringify(t.task_history))
+            // Finish the task.
+            taskOperations.finishTask('Task is clicked from the dropdown Asana tasks list')
+            // Create the task.
+            taskOperations.createTask('Task is clicked from the dropdown Asana tasks list')
           }
         })
       })
@@ -214,9 +229,23 @@ function sendPomoRecord () {
       }
       jsonBody.tasksList.push(jsonRecord)
     })
+    t.task_history = []
+    // Set the task name tag to its default value.
+    console.log('Clear the task history when pomodoro data sent to the backend server.')
     jsonBody.pomo.isFullPomo = t.timer_history.at(-1).isFullPomo
     jsonBody.pomo.pomoInRow = t.timer_state.pomo_session_count
     api.sendPomoRecord(jsonBody)
+    // Refresh/update the task list from the Asana server.
+    // 1 Retrieve Asana tasks.
+    if (!logoutOrCloseFlag) {
+      console.log('Refresh/update the task list from the Asana server.')
+      api.getAsanaTasksforUser().then((tasks) => {
+        // 2 Modify the DOM.
+        if (tasks !== -1) {
+          asanaDomElements.updateTasksListDropdownMenu(tasks)
+        }
+      })
+    }
   }
 }
 
@@ -228,29 +257,14 @@ function runningTimerDisplays () {
   displayElements.minute_tag.innerHTML = helpers.formatedTime(t.timer_state.minutes) + ':'
   displayElements.second_tag.innerHTML = helpers.formatedTime(t.timer_state.seconds)
 
-  // If the timer is stopped either by pressing a button or due to the timer running out without a Pomodoro session.
+  // If the timer is stopped due to stop button clicked or the timer running out without a Pomodoro session.
   // then initialize the tree and update the buttons accordingly.
   if (t.timer_control.stop_flag) {
-    if (t.timer_control.breaking_flag && isAuthentificated) {
-      // Assign the end time to the current task in the task history list.
-      t.task_history.at(-1).time.end = Date.now()
-      console.log('Include the task end time in the task history when the "stop" event occurs in the runningDisplay function. ' + JSON.stringify(t.task_history))
-      // Send the Pomodoro record to the backend server.
-      sendPomoRecord()
-      // Clear the task history after sending it to the backend server.
-      t.task_history = []
-      // Set the task name tag to its default value.
-      asanaDomElements.deleteTaskTag()
-      console.log('Clear the task history when the "stop" event occurs in the runningDisplay function.')
-      // Refresh/update the task list from the Asana server.
-      // 1 Retrieve Asana tasks.
-      if (!logoutOrCloseFlag) {
-        api.getAsanaTasksforUser().then((tasks) => {
-          // 2 Modify the DOM.
-          asanaDomElements.updateTasksListDropdownMenu(tasks)
-        }
-        )
+    if (isAuthentificated && (t.timer_control.breaking_flag || !t.timer_init.pomo_session)) {
+      if (!t.timer_control.pause_flag) {
+        taskOperations.finishTask('Stop event (stop button clicked or timer running out (if no pomodoro session)).')
       }
+      sendPomoRecord()
     }
     // Conceal the image for the breaking time.
     displayElements.breaking_image_tag.style.display = 'none'
@@ -270,21 +284,10 @@ function runningTimerDisplays () {
     if (!t.timer_control.breaking_flag) {
       if (currentDisplay !== 'break') {
         if (isAuthentificated) {
-          // Assign the end time to the current task in the task history list.
-          t.task_history.at(-1).time.end = Date.now()
-          console.log('Add task end time from breaking time of display function ' + JSON.stringify(t.task_history))
+          // Finish current task.
+          taskOperations.finishTask('Breaking time of display function')
           // Send the Pomodoro record to the backend server.
           sendPomoRecord()
-          // Clear the task history after sending it to the backend server.
-          t.task_history = []
-          console.log('Clear task history from breaking time of display function. length is ' + JSON.stringify(t.task_history))
-          // Refresh/update the task list from the Asana server.
-          // 1 Retrieve Asana tasks.
-          api.getAsanaTasksforUser().then((tasks) => {
-            // 2 Modify the DOM.
-            asanaDomElements.updateTasksListDropdownMenu(tasks)
-            console.log('Task list is updated from Asana server.')
-          })
         }
         // Conceal the tree image.
         displayElements.tree_tag.style.display = 'none'
@@ -301,13 +304,7 @@ function runningTimerDisplays () {
       if (currentDisplay !== 'pomo') {
         if (isAuthentificated) {
           // Append the current task to the task history and include the task start time.
-          t.addTaskToHistory(
-            asanaDomElements.taskName_tag.dataset.id,
-            asanaDomElements.taskName_tag.innerHTML,
-            Date.now(),
-            null
-          )
-          console.log('Add task to history from pomo time Runningdisplay function ' + JSON.stringify(t.task_history))
+          taskOperations.createTask('Pomo time Runningdisplay function')
         }
         // Conceal the image for the breaking time.
         displayElements.breaking_image_tag.style.display = 'none'
@@ -385,7 +382,8 @@ function userState (username, asanaTasksList) {
   navBar.showLogoutLink()
   navBar.setUsername(username)
   navBar.showDetailsLink()
-  if (asanaTasksList.length !== 0) {
+  document.getElementById('garden').innerHTML = ''
+  if (asanaTasksList !== -1 && asanaTasksList.length !== 0) {
     // Incorporate Asana tasks into the dropdown list of tasks.
     asanaDomElements.updateTasksListDropdownMenu(asanaTasksList)
   } else console.log('dom_manipulation.userState(): asanaTasksList length === 0')
@@ -402,21 +400,14 @@ async function completeTaskButtonClick () {
   // If the "Complete Task" button is clicked during running time,
   // assign the end time to the current task in the task history list.
   if ((t.timer_control.breaking_flag && !t.timer_control.stop_flag && !t.timer_control.pause_flag)) {
-    t.task_history.at(-1).time.end = Date.now()
-    console.log('Include the task stop time when the task complete button is clicked. ' + JSON.stringify(t.task_history))
+    taskOperations.finishTask('The task complete button is clicked')
     // Temporarily select the default task before the user chooses another.
-    t.addTaskToHistory(
-      asanaDomElements.taskName_tag.dataset.id,
-      asanaDomElements.taskName_tag.innerHTML,
-      Date.now(),
-      null
-    )
-    console.log('Temporarily add a null task to the history when the complete button is clicked. ' + JSON.stringify(t.task_history))
+    taskOperations.createTask('Temporarily add a null task when the complete button is clicked')
   }
   // 1 Send information to the Asana server.
-  await api.markTaskComplitedAsanaServer(taskGID)
+  await api.markTaskCompletedAsanaServer(taskGID)
   // 2 Transmit information to the backend server.
-  await api.markTaskComplitedBackend(taskGID, taskName)
+  await api.markTaskCompletedBackend(taskGID, taskName)
   // 3 Refresh/update the task list.
   // 3.1 Retrieve Asana tasks.
   const tasks = await api.getAsanaTasksforUser()
@@ -430,6 +421,7 @@ async function completeTaskButtonClick () {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  currentDisplay = '' // 'pomo' or 'break'.
   // Send the task to the backend server when the tab or window is closed.
 
   window.addEventListener('beforeunload', function (e) {
@@ -526,6 +518,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (reslult !== -1) {
       // Modify the DOM nav menu.
       anonimousState()
+      document.getElementById('garden').innerHTML = ''
       alert('Logged out successfully')
     } else {
       alert('Can not logout. Please connect to site administrator.')
@@ -563,6 +556,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 4.3 Authenticate and sign in a new user on the backend server.
     const result = await api.signin(authJsonData)
     if (result !== -1) {
+      currentDisplay = ''
       // Transmit the Asana Personal Access Token (PAT) to the server.
       const asanaResponse = await api.setAsanaToken(asanaPatData)
       if (asanaResponse === 0) {
@@ -591,6 +585,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const result = await api.login(jsonData)
 
     if (result !== -1) {
+      currentDisplay = ''
       logoutOrCloseFlag = false
       // 5.4 Retrieve Asana tasks.
       const tasks = await api.getAsanaTasksforUser()
@@ -634,9 +629,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (displayElements.pause_button_tag.value === 'pause') {
       t.pause_timer()
       if (t.timer_control.breaking_flag && isAuthentificated) {
-        // Assign the end time to the current task in the task history list.
-        t.task_history.at(-1).time.end = Date.now()
-        console.log('Include the task stop time when the pause button is clicked. ' + JSON.stringify(t.task_history))
+        // Assign the end time to the current task.
+        taskOperations.finishTask('Pause button is clicked while pomodoro is running')
       }
       displayElements.pause_button_tag.value = 'resume'
       displayElements.pause_button_tag.innerHTML = 'Resume'
@@ -644,13 +638,7 @@ document.addEventListener('DOMContentLoaded', function () {
       t.resume_timer()
       if (t.timer_control.breaking_flag && isAuthentificated) {
       // Append the current task to the task history and include the task start time.
-        t.addTaskToHistory(
-          asanaDomElements.taskName_tag.dataset.id,
-          asanaDomElements.taskName_tag.innerHTML,
-          Date.now(),
-          null
-        )
-        console.log('Include the task in the history when the resume button is clicked. ' + JSON.stringify(t.task_history))
+        taskOperations.createTask('Resume button is clicked while pomodoro time')
       }
       displayElements.pause_button_tag.value = 'pause'
       displayElements.pause_button_tag.innerHTML = 'Pause'

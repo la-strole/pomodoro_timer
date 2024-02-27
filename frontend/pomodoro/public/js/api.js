@@ -4,7 +4,7 @@ export {
   getCsrfToken, isAuthenificated,
   // eslint-disable-next-line no-use-before-define
   setAsanaToken, getAsanaToken, getAsanaTasks, getAsanaTasksforUser, BASE_URL,
-  markTaskComplitedAsanaServer, markTaskComplitedBackend, sendPomoRecord
+  markTaskCompletedAsanaServer, markTaskCompletedBackend, sendPomoRecord
 }
 
 // TODO Set the real path in production
@@ -16,7 +16,7 @@ const WHOAMI_URL = BASE_URL + 'auth/whoami'
 const GETCSRFTOKEN_URL = BASE_URL + 'auth/get_csrf_token'
 const ASANATOKEN_URL = BASE_URL + 'asana'
 const POMORECORD_URL = BASE_URL + 'pomo'
-const SETTASKCOMPLITED = BASE_URL + 'set_task_complited'
+const SETTASKCOMPLETED = BASE_URL + 'set_task_completed'
 const ASANABASEURL = 'https://app.asana.com/api/1.0'
 
 function getCookie (name) {
@@ -249,8 +249,7 @@ async function getAsanaUserTaskList (token, workspaceId) {
 async function getAsanaTasksFromTasklist (token, userTaskListGid) {
   // Retrieve tasks from a user's task list.
   // https://developers.asana.com/reference/getusertasklistforuser
-  const url = `${ASANABASEURL}/user_task_lists/${userTaskListGid}/
-  tasks?${new URLSearchParams({ completed_since: 'now' })}`
+  const url = ASANABASEURL + '/user_task_lists/' + userTaskListGid + '/tasks?' + new URLSearchParams({ completed_since: 'now' })
   try {
     const response = await fetch(url, {
       headers: {
@@ -310,7 +309,7 @@ async function getAsanaTasksforUser () {
   return tasks
 }
 
-async function markTaskComplitedAsanaServer (taskGID) {
+async function markTaskCompletedAsanaServer (taskGID) {
   // Mark a task as completed on the Asana server.
   // https://developers.asana.com/reference/updatetask
   const url = `${ASANABASEURL}/tasks/${taskGID}`
@@ -338,10 +337,10 @@ async function markTaskComplitedAsanaServer (taskGID) {
   }
 }
 
-async function markTaskComplitedBackend (taskGID, taskName) {
+async function markTaskCompletedBackend (taskGID, taskName) {
   // Mark a task as completed on the backend server.
   try {
-    const response = await fetch(SETTASKCOMPLITED, {
+    const response = await fetch(SETTASKCOMPLETED, {
       method: 'POST',
       headers: {
         accept: 'application/json',

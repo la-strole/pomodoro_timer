@@ -70,7 +70,7 @@ class TaskComplitedAPI(BaseModel):
     Validate the completed task record.
     """
 
-    task_id: Union[PositiveInt, Literal["null"]]
+    task_id: PositiveInt
 
     @field_validator("task_id")
     @classmethod
@@ -78,7 +78,7 @@ class TaskComplitedAPI(BaseModel):
         """
         Update the completed task record id datatype to string.
         """
-        return str(v) if isinstance(v, int) else v
+        return str(v)
 
     task_name: str
 
