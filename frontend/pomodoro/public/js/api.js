@@ -43,7 +43,14 @@ async function signin (signinData) {
     })
     if (!response.ok) {
       console.log('Sign-in API response error: ' + response.status)
-      return -1
+      let errorMsg
+      try {
+        const result = await response.json()
+        errorMsg = result.error
+      } catch (err) {
+        return -1
+      }
+      return errorMsg
     }
     console.log('Sign-in API successful')
     return 0

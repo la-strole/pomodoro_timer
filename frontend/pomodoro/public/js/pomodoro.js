@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 4.3 Authenticate and sign in a new user on the backend server.
     const result = await api.signin(authJsonData)
-    if (result !== -1) {
+    if (result === 0) {
       currentDisplay = ''
       // Transmit the Asana Personal Access Token (PAT) to the server.
       const asanaResponse = await api.setAsanaToken(asanaPatData)
@@ -568,7 +568,11 @@ document.addEventListener('DOMContentLoaded', function () {
       } else { userState(formData.get('username'), []) } // Update the DOM without including Asana tasks.
       signinOffcanvas.hide()
     } else {
-      alert('Can not sign in. Try to connect with site administrator')
+      if (result === -1) {
+        alert('Can not sign in. Try to connect with site administrator')
+      } else {
+        alert(`Can not sign in. ${result}`)
+      }
     }
   })
 
