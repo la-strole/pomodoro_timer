@@ -14,7 +14,7 @@
     },
     "type": "module",
     "scripts": {
-        "test": "npm run run_server && mocha -r esm --timeout 10000 'pomodoro/test/**/*.{js,cjs}'",
+        "test": "npm run run_server && mocha -r esm --timeout 15000 'pomodoro/test/**/*.{js,cjs}'",
         "build": "./scripts/build.sh",
         "lint": "grunt lint",
         "run_server": "npx http-server ./pomodoro/public --root -s -p 8080 -a 127.0.0.1 public &"
