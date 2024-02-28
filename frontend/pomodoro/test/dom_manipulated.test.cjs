@@ -10,10 +10,10 @@ let driver
 const webAppUrl = 'http://127.0.0.1:8080/pomodoro.html'
 
 describe('CLIENT SIDE: INITIAL STATE', () => {
-  before(async () => {
+  before(() => {
     const firefoxOptions = new Options()
     firefoxOptions.headless()
-    driver = await new Builder().forBrowser('firefox').setFirefoxOptions(firefoxOptions).build()
+    driver = new Builder().forBrowser('firefox').setFirefoxOptions(firefoxOptions).build()
   })
 
   it('1. When the Nginx server is running, test the client-side functionality by verifying that the title of the page is equal to "Pomodoro Timer".', async () => {
