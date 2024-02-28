@@ -2,7 +2,7 @@
 
 Simple, lightweight pomodoro timer (<https://en.wikipedia.org/wiki/Pomodoro_Technique>). Watch your tree grow in 25 minutes.
 
-## Docker
+## Docker (temporary)
 
 1. `docker pull eugeneparkhom/pomodoro` - Listen at 80 hhtp port.
 

@@ -51,9 +51,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install Poetry
-        run: curl -sSL https://install.python-poetry.org | python3 -
+        run: |
+            curl -sSL https://install.python-poetry.org | python3 -
+            source $HOME/.poetry/env
       - name: Install dependencies
-        run: ~/.local/bin/poetry config virtualenvs.create false && ~/.local/bin/poetry install --no-root
+        run: ~/.local/bin/poetry install --no-root
         working-directory: ./backend/pomodoro_server
       - name: Run test suite
         run: make test
