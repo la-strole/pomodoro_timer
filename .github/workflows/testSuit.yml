@@ -1,7 +1,7 @@
 name: Pomodoro app test suite
 
 on:
-  pull_request:
+ workflow_dispatch:
 jobs:
   TestFrontend:
     runs-on: ubuntu-latest
