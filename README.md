@@ -1,6 +1,6 @@
 # Pomodoro timer
 
-Simple, lightweight pomodoro timer (<https://en.wikipedia.org/wiki/Pomodoro_Technique>).<br> No authentication, no logs. <br> Watch your tree grow in 25 minutes.
+Simple, lightweight pomodoro timer (<https://en.wikipedia.org/wiki/Pomodoro_Technique>). Watch your tree grow in 25 minutes.
 
 ## Docker
 
