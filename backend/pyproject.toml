@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "server side logic for pomodoro"
 authors = ["la-strole <sovaleto48@gmail.com>"]
 license = "MIT"
-readme = "README.md"
 packages = [{include = "pomodoro_server"}]
 
 [tool.poetry.dependencies]
