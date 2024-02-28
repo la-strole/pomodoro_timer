@@ -2,9 +2,9 @@ name: Pomodoro app test suite
 
 on:
   pull_request:
-    types: ["opened"]
-    branches: [ "main" ]
-
+    branches:
+      - main
+    types: [opened]
 jobs:
   TestFrontend:
     runs-on: ubuntu-latest
@@ -47,16 +47,26 @@ jobs:
       DJANGO_SECRET_KEY: 'test_key'
       FERNET_KEY: 'yLPvzO2L59Q6znzC1G0gudb5xyfP1CJCuQmcfy18La8='
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Install Poetry
+      - uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v4
+        # see details (matrix, python-version, python-version-file, etc.)
+        # https://github.com/actions/setup-python
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
+      - name: Setup a local virtual environment (if no poetry.toml file)
         run: |
-            curl -sSL https://install.python-poetry.org | python3 -
-            source $HOME/.poetry/env
-      - name: Install dependencies
-        run: ~/.local/bin/poetry install --no-root
+          poetry config virtualenvs.create true --local
+          poetry config virtualenvs.in-project true --local
+      - uses: actions/cache@v3
+        name: Define a cache for the virtual environment based on the dependencies lock file
+        with:
+          path: ./backend/pomodoro_server/.venv
+          key: venv-${{ hashFiles('poetry.lock') }}
+      - name: Install the project dependencies
+        run: poetry install
+
         working-directory: ./backend/pomodoro_server
       - name: Run test suite
-        run: make test
+        run: poetry run python manage.py test
         working-directory: ./backend/pomodoro_server

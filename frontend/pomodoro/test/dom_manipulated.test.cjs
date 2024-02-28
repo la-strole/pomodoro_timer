@@ -10,10 +10,10 @@ let driver
 const webAppUrl = 'http://127.0.0.1:8080/pomodoro.html'
 
 describe('CLIENT SIDE: INITIAL STATE', () => {
-  before(async () => {
+  before(() => {
     const firefoxOptions = new Options()
     firefoxOptions.headless()
-    driver = await new Builder().forBrowser('firefox').setFirefoxOptions(firefoxOptions).build()
+    driver = new Builder().forBrowser('firefox').setFirefoxOptions(firefoxOptions).build()
   })
 
   it('1. When the Nginx server is running, test the client-side functionality by verifying that the title of the page is equal to "Pomodoro Timer".', async () => {
@@ -91,9 +91,9 @@ describe('CLIENT SIDE: INITIAL STATE', () => {
       expect(inner).to.be.equal('00')
     })
   })
-  after(async () => {
+  after(() => {
     // Quit the WebDriver once all tests are done.
-    await driver.quit()
+    driver.quit()
   })
 })
 
@@ -257,9 +257,9 @@ describe('CLIENT-SIDE: Test the "start" button pipeline.', () => {
     const children = await garden.findElements(By.xpath('./*'))
     expect(children.length).to.be.equal(1)
   })
-  after(async () => {
+  after(() => {
     // Quit the WebDriver once all tests are completed.
-    await driver.quit()
+    driver.quit()
   })
 })
 describe('CLIENT-SIDE: Press Stop during the Pomodoro session.', () => {
@@ -324,9 +324,9 @@ describe('CLIENT-SIDE: Press Stop during the Pomodoro session.', () => {
     const children = await garden.findElements(By.xpath('./*'))
     expect(children.length).to.be.equal(1)
   })
-  after(async () => {
+  after(() => {
     // Quit the WebDriver once all tests are completed.
-    await driver.quit()
+    driver.quit()
   })
 })
 describe('CLIENT-SIDE: Press Stop during the break time.', () => {
@@ -392,9 +392,9 @@ describe('CLIENT-SIDE: Press Stop during the break time.', () => {
     const children = await garden.findElements(By.xpath('./*'))
     expect(children.length).to.be.equal(1)
   })
-  after(async () => {
+  after(() => {
     // Quit the WebDriver once all tests are completed.
-    await driver.quit()
+    driver.quit()
   })
 })
 describe('CLIENT-SIDE: Press Stop when the timer is paused during the Pomodoro session.', () => {
@@ -457,9 +457,9 @@ describe('CLIENT-SIDE: Press Stop when the timer is paused during the Pomodoro s
     const children = await garden.findElements(By.xpath('./*'))
     expect(children.length).to.be.equal(1)
   })
-  after(async () => {
+  after(() => {
     // Quit the WebDriver once all tests are completed.
-    await driver.quit()
+    driver.quit()
   })
 })
 describe('CLIENT-SIDE: Press Stop when the timer is paused during the break time.', () => {
@@ -526,8 +526,8 @@ describe('CLIENT-SIDE: Press Stop when the timer is paused during the break time
     const children = await garden.findElements(By.xpath('./*'))
     expect(children.length).to.be.equal(1)
   })
-  after(async () => {
+  after(() => {
     // Quit the WebDriver once all tests are completed.
-    await driver.quit()
+    driver.quit()
   })
 })
