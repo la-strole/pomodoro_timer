@@ -91,9 +91,9 @@ describe('CLIENT SIDE: INITIAL STATE', () => {
       expect(inner).to.be.equal('00')
     })
   })
-  after(async () => {
+  after(() => {
     // Quit the WebDriver once all tests are done.
-    await driver.quit()
+    driver.quit()
   })
 })
 
