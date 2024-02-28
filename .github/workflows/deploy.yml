@@ -41,8 +41,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          context: .
-          file: ./frontend/Dockerfile
+          context: ./frontend
           tags: eugeneparkhom/pomodoro_frontend:1.0.${{ github.run_number }}
 
     
