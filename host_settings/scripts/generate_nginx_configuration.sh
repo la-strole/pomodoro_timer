@@ -32,7 +32,7 @@ server {
     }
 
     location /backend/static/admin {
-        proxy_pass http://localhost:8888/backend/static/admin;
+        proxy_pass http://localhost:8887/djangostatic/admin;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_redirect off;
