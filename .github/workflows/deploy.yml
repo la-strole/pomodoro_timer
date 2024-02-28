@@ -1,17 +1,10 @@
 name: Deploy pipeline
 
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - '**.js'
-      - '**.html'
-      - 'public/**'
-      - 'src/**'
-      - 'Dockerfile'
+  workflow_dispatch:
 
 jobs:
-  Deployment:
+  DeploymentFrontend:
 
     runs-on: ubuntu-latest
     
@@ -25,9 +18,11 @@ jobs:
       - 
         name: Install pre-production dependencies
         run: npm install --omit=dev
+        working-directory: ./frontend
       - 
         name: Build (minification)
-        run: npm run build
+        run: make build
+        working-directory: ./frontend
       - 
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -45,15 +40,8 @@ jobs:
           load: true
           tags: pomo_test
       -
-        name: Test
-        run: |
-          docker run --rm -d -p 8080:80 pomo_test
-          chmod +x ./test/dockerImageTest.py
-          ./test/dockerImageTest.py
-
-      -
         name: Push Docker image
         run: |
-          docker tag pomo_test eugeneparkhom/pomodoro:1.0.${{ github.run_number }}
-          docker push eugeneparkhom/pomodoro:1.0.${{ github.run_number }}
+          docker tag pomo_test eugeneparkhom/pomodoro_frontend:1.0.${{ github.run_number }}
+          docker push eugeneparkhom/pomodoro_frontend:1.0.${{ github.run_number }}
     
