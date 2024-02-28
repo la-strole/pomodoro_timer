@@ -16,18 +16,21 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-      - name: Go to frontend folder
-        run: cd ./frontend
+
+
       - name: Install dependencies
         run: npm install
+        working-directory: ./frontend
       - name: Run linter for JS and HTML
         run: npm run lint
+        working-directory: ./frontend
       - name: Setup Geckodriver
         uses: browser-actions/setup-geckodriver@latest
       - name: Setup Firefox
         uses: browser-actions/setup-firefox@latest
       - name: Run test suite
         run: npm run test
+        working-directory: ./frontend
       - name: Kill local http server
         run: pkill -f http-server
       - name: TruffleHog Check for secrets
