@@ -2,9 +2,6 @@ name: Pomodoro app test suite
 
 on:
   pull_request:
-    types: ["opened"]
-    branches: [ "main" ]
-
 jobs:
   TestFrontend:
     runs-on: ubuntu-latest
