@@ -2,14 +2,18 @@ import logging
 from datetime import datetime
 
 from cryptography.fernet import InvalidToken
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import (
+    get_password_validators,
+    validate_password,
+)
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.db import IntegrityError
 from django.db.models import Avg, Count, Max, Sum
 from django.http.response import JsonResponse
-from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 from pydantic import ValidationError as PydanticValidationError
@@ -254,6 +258,17 @@ def signin_user(request) -> JsonResponse:
         LOGGER.error("Can not parse signin request, error:%s", e)
         return JsonResponse({"error": "Invalid JSON data"}, status=400)
     # Add a new user to the database.
+    # Validate password.
+    try:
+        validate_password(
+            json_data.password,
+            password_validators=get_password_validators(
+                settings.AUTH_PASSWORD_VALIDATORS
+            ),
+        )
+    except ValidationError as e:
+        LOGGER.error("Unable to create a new user: password validation error: %s", e)
+        return JsonResponse({"error": e}, status=400)
     try:
         new_user = User.objects.create_user(
             username=json_data.username, password=json_data.password
