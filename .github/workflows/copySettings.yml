@@ -15,7 +15,7 @@ jobs:
       - 
         name: Copy Folder to host_prod Branch
         run: |
-          git checkout settings
+          git checkout host_prod
           git checkout main -- ./host_settings
           git add ./host_settings
           git commit -m "Update folder in host_prod branch"
