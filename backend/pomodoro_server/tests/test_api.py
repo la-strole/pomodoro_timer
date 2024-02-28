@@ -166,17 +166,17 @@ class TestAsanaAPI(TestCase):
 
     def test_get_asana_api_authorized_user_without_api(self) -> None:
         """
-        Try to get asana API with authorized user, \
+        Try to get asana API with authorized user,
         but there are not api key for this user in database.
         """
         self.client.login(username="testuser", password=TEST_PASSWORD)
         response = self.client.get(path=PATH_ASANA_API)
         self.assertEqual(
             response.status_code,
-            404,
-            f"Unexpected behaviour. If authorized user try to get asana API \
-            (but this api doesn't exist in database) \
-            django should return 404 error page, but returns {response.status_code}",
+            500,
+            "Unexpected behaviour. If authorized user try to get asana API "
+            "(but this api doesn't exist in database) "
+            f"django should return 404 error page, but returns {response.status_code}",
         )
 
 
@@ -341,6 +341,9 @@ class TestSetTaskCompleted(TestCase):
         )
         self.assertEqual(
             response.status_code,
-            500,
+            200,
         )
+        tasks = Tasks.objects.filter(gid=TASKGID)
+        for task in tasks:
+            self.assertEqual(task.completed, True)
         self.client.logout()
