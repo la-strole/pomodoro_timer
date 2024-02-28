@@ -4,14 +4,9 @@ on:
   pull_request:
     types: ["opened"]
     branches: [ "main" ]
-    paths:
-      - '**.js'
-      - '**.html'
-      - 'public/**'
-      - 'src/**'
 
 jobs:
-  TestSuitePR:
+  TestFrontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -21,6 +16,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
+      - name: Go to frontend folder
+        run: cd /frontend
       - name: Install dependencies
         run: npm install
       - name: Run linter for JS and HTML
@@ -29,8 +26,6 @@ jobs:
         uses: browser-actions/setup-geckodriver@latest
       - name: Setup Firefox
         uses: browser-actions/setup-firefox@latest
-      - name: Run local http server
-        run: npm run run_server &
       - name: Run test suite
         run: npm run test
       - name: Kill local http server
