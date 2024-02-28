@@ -8,7 +8,7 @@ Simple, lightweight pomodoro timer (<https://en.wikipedia.org/wiki/Pomodoro_Tech
 
 ## Demo
 
-![demo image](https://github.com/la-strole/pomodoro_timer/blob/main/image.png)
+![demo image](https://github.com/la-strole/pomodoro_timer/blob/main/README/image.png)
 
 ## Contributing
 
