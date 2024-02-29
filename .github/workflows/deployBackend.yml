@@ -45,7 +45,7 @@ jobs:
 
       - 
         run: ls -la
-        working-directory: ./
+        working-directory: ./backend
 
       - name: Commit and push changes
         run: |
