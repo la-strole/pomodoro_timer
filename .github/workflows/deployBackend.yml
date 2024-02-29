@@ -44,6 +44,7 @@ jobs:
           
       - name: Switch to host_settings branch
         run: cd ./host_settings
+      - run: git fetch --all
       - run: git branch -a
       
       - run: git status
