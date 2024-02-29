@@ -28,11 +28,14 @@ jobs:
         name: Install pre-production dependencies
         run: npm install --omit=dev
         working-directory: ./frontend
-      - 
-        name: Get code from host_settings submodule
+
+      - name: Checkout main repository
+        uses: actions/checkout@v2
+
+      - name: Initialize and update submodule
         run: |
-          git submodule init
-          git submodule update
+          git submodule update --init --recursive
+          
       - 
         name: Build (minification)
         run: make build
