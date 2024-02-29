@@ -56,4 +56,4 @@ jobs:
           git config --global user.name "GitHub Actions"
           git add .
           git commit -m "modify host_settings files"
-          git push
+          git push origin HEAD:host_settings
