@@ -42,11 +42,9 @@ jobs:
           git config --global user.name "GitHub Actions"
           git submodule update --init --recursive
           
-      - name: Switch to host_settings branch
-        run: cd ./host_settings
       - run: git fetch --all
       - run: git branch -a
-      
+      - run: git checkout host_settings
       - run: git status
       
       - name: Modify host_settings/run_backend_docker_container.sh
