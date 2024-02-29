@@ -43,14 +43,14 @@ jobs:
           git submodule update --init --recursive
           
       - name: Switch to host_settings branch
-        run: git checkout origin/host_settings
+        run: cd ./host_settings
       
       - run: git status
       
       - name: Modify host_settings/run_backend_docker_container.sh
         run: |
             # Replace the static tag version in script.sh with the run number
-            sed -i "s/1.0.0/${${{ github.run_number }}}/" ./host_settings/scripts/run_backend_docker_container.sh
+            sed -i "s/1.0.0/${${{ github.run_number }}}/" ./scripts/run_backend_docker_container.sh
       
       - name: Commit and push changes
         run: |
