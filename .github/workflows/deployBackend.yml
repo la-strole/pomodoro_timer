@@ -52,6 +52,8 @@ jobs:
         run: |
           # modify files
           cd ./host_settings
+          git config --global user.email "actions@example.com"
+          git config --global user.name "GitHub Actions"
           git add .
           git commit -m "modify host_settings files"
           cd .. # back to pomodoro_timer folder
