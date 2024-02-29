@@ -43,9 +43,10 @@ jobs:
           # Get the current run number from GitHub Actions
           RUN_NUMBER=${{ github.run_number }}
 
-          # Replace the static tag version in script.sh with the run number
-          ls -a
-                  
+      - 
+        run: ls -la
+
+
       - name: Commit and push changes
         run: |
           # modify files
