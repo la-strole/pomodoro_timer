@@ -43,7 +43,7 @@ jobs:
           git submodule update --init --recursive
           
       - name: Switch to host_settings branch
-        run: git checkout -b host_settings origin/host_settings
+        run: git checkout origin/host_settings
       
       - run: git status
       
