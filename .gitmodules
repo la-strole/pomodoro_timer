@@ -1,4 +1,4 @@
 [submodule "host_settings"]
 	path = host_settings
-	url = git@github.com:la-strole/pomodoro_timer.git
+	url = ../
 	branch = host_settings
