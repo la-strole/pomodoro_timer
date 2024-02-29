@@ -44,7 +44,7 @@ jobs:
           
       - run: git fetch --all
       - run: git branch -a
-      - run: git checkout host_settings
+      - run: git checkout -- host_settings
       - run: git status
       
       - name: Modify host_settings/run_backend_docker_container.sh
