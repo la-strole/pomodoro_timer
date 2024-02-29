@@ -45,7 +45,7 @@ jobs:
 
       - 
         run: ls -la
-
+        working-directory: ./
 
       - name: Commit and push changes
         run: |
