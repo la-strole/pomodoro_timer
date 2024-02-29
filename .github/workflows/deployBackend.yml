@@ -40,12 +40,8 @@ jobs:
       - 
         name: Modify host_settings/run_backend_docker_container.sh
         run: |
-            # Get the current run number from GitHub Actions
-            RUN_NUMBER=${{ github.run_number }}
-  
             # Replace the static tag version in script.sh with the run number
-            sed -i "s/1.0.0/${RUN_NUMBER}/" scripts/run_backend_docker_container.sh
-        working-directory: ./host_settings
+            sed -i "s/1.0.0/${${{ github.run_number }}}/" ./host_settings/scripts/run_backend_docker_container.sh
 
       - name: Commit and push changes
         run: |
