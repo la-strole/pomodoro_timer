@@ -268,7 +268,7 @@ def signin_user(request) -> JsonResponse:
         )
     except ValidationError as e:
         LOGGER.error("Unable to create a new user: password validation error: %s", e)
-        return JsonResponse({"error": e}, status=400)
+        return JsonResponse({"error": e.message_dict}, status=400)
     try:
         new_user = User.objects.create_user(
             username=json_data.username, password=json_data.password
