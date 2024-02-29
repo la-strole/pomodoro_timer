@@ -29,6 +29,11 @@ jobs:
         run: npm install --omit=dev
         working-directory: ./frontend
       - 
+        name: Get code from host_settings submodule
+        run: |
+          git submodule init
+          git submodule update
+      - 
         name: Build (minification)
         run: make build
         working-directory: ./frontend
