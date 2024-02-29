@@ -56,7 +56,4 @@ jobs:
           git config --global user.name "GitHub Actions"
           git add .
           git commit -m "modify host_settings files"
-          cd .. # back to pomodoro_timer folder
-          git add host_settings
-          git commit -m "record host_settings new SHA1"
           git push
