@@ -44,8 +44,8 @@ jobs:
           RUN_NUMBER=${{ github.run_number }}
 
       - 
-        run: ls -la
-        working-directory: ./backend
+        run: cd backend
+        
 
       - name: Commit and push changes
         run: |
