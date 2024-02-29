@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -28,17 +29,13 @@ jobs:
         name: Install pre-production dependencies
         run: npm install --omit=dev
         working-directory: ./frontend
-
-      - name: Checkout main repository
-        uses: actions/checkout@v2
       
       - name: Initialize and update submodule
         run: |
           git submodule update --init --recursive
           
-      - 
-        name: Checkout main repository
-        uses: actions/checkout@v2
+      - name: Switch to main branch
+        run: git checkout main
         
       - 
         name: Build (minification)
