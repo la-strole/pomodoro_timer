@@ -49,10 +49,10 @@ jobs:
         run: git fetch --all
 
       - name: Create temorarily branch
-        run: git checkout -b temp_branch
+        run: git checkout host_settings
 
       - name: Pull from origin host_settings bransh to temp_branch
-        run: git pull origin host_settings
+        run: git pull
         
       - name: Modify host_settings/run_backend_docker_container.sh
         run: |
@@ -66,4 +66,4 @@ jobs:
           git commit -m "modify host_settings files"
              
       - name: Push changes
-        run: git push origin temp_branch:host_settings
+        run: git push 
