@@ -38,11 +38,13 @@ jobs:
 #          tags: eugeneparkhom/pomodoro_backend:1.0.${{ github.run_number }}
       - name: Initialize and update submodule
         run: |
+          git config --global user.email "actions@example.com"
+          git config --global user.name "GitHub Actions"
           git submodule update --init --recursive
           
-      - name: Switch to main branch
+      - name: Switch to host_settings branch
         run: git checkout host_settings
-        
+      - run: git status
       - name: Modify host_settings/run_backend_docker_container.sh
         run: |
             # Replace the static tag version in script.sh with the run number
@@ -51,8 +53,6 @@ jobs:
       - name: Commit and push changes
         run: |
           # modify files
-          git config --global user.email "actions@example.com"
-          git config --global user.name "GitHub Actions"
           git add .
           git commit -m "modify host_settings files"
-          git push 
+          git push origin host_settings
