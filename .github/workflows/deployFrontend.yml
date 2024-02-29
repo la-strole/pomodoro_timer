@@ -31,11 +31,15 @@ jobs:
 
       - name: Checkout main repository
         uses: actions/checkout@v2
-
+      
       - name: Initialize and update submodule
         run: |
           git submodule update --init --recursive
           
+      - 
+        name: Checkout main repository
+        uses: actions/checkout@v2
+        
       - 
         name: Build (minification)
         run: make build
