@@ -49,7 +49,7 @@ jobs:
         run: git fetch --all
 
       - name: Create temorarily branch
-        run: git checkout host_settings
+        run: git checkout -- host_settings
 
       - name: Pull from origin host_settings bransh to temp_branch
         run: git pull
