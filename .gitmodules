@@ -1,0 +1,4 @@
+[submodule "docker_host_settings"]
+	path = host_settings
+	url = ./
+	branch = host_settings
