@@ -40,30 +40,28 @@ jobs:
       - name: Go to host_settings folder and Modify host_settings/run_backend_docker_container.sh
         run: |
 
+          echo 'config git email and username'
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
 
-          git status
-          git branch -a
-
+          echo 'Update submodule'
           git submodule update --init --recursive
+          
+          echo 'cd to submodule folder'
           cd host_settings/
 
+          echo 'checkout to host_settings branch'
           git checkout host_settings
           
-          git status
-          git branch -a
-
+          echo 'Change version number'
           sed -i "s/pomodoro_backend:\([0-9]\+\.[0-9]\+\.[0-9]\+\)/pomodoro_backend:1.0.${{ github.run_number }}/" scripts/run_backend_docker_container.sh
 
           echo 'git add'
           git add scripts/run_backend_docker_container.sh
+
           echo 'git commit'
           git commit -m "modify host_settings files"
-
-          echo 'git config'
-          git config --list
           
           echo 'git push'
           git push https://la-strole:${{ secrets.GITHUB_TOKEN }}@github.com/la-strole/pomodoro_timer.git HEAD:host_settings
-          # git push https://github.com/la-strole/pomodoro_timer.git HEAD:host_settings
+
