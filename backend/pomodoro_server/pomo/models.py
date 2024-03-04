@@ -12,8 +12,9 @@ class Tasks(models.Model):
     gid = models.CharField(
         verbose_name="Task ID",
         name="gid",
-        help_text="Identifier of the resource, as a string",
+        help_text="Identifier of the resource, as a string (Positive integer or literal 'null')",
         max_length=128,
+        blank=False,
     )
 
     name = models.CharField(
@@ -38,6 +39,9 @@ class Tasks(models.Model):
     def __str__(self) -> str:
         return str(self.name)
 
+    class Meta:
+        verbose_name_plural = "Tasks"
+
 
 class AsanaApiKey(models.Model):
     """
@@ -58,6 +62,7 @@ class AsanaApiKey(models.Model):
         related_name="asana_api_key",
         related_query_name="asana_api_key",
         blank=False,
+        editable=False,
     )
 
     api_key = models.BinaryField(
@@ -65,10 +70,14 @@ class AsanaApiKey(models.Model):
         name="api_key",
         unique=True,
         blank=False,
+        editable=False,
     )
 
     def __str__(self) -> str:
         return f"{self.user}'s Asana API key"
+
+    class Meta:
+        verbose_name_plural = "Asana API Keys"
 
 
 class TaskRecords(models.Model):
@@ -92,7 +101,7 @@ class TaskRecords(models.Model):
         on_delete=models.CASCADE,
         related_name="task_records",
         related_query_name="task_records",
-        blank=True,
+        blank=False,
     )
 
     date = models.DateTimeField(
@@ -113,6 +122,7 @@ class TaskRecords(models.Model):
     class Meta:
         # Indexes to include in the database:
         indexes = [models.Index(fields=["date"])]
+        verbose_name_plural = "Task records"
 
 
 class PomoRecords(models.Model):
@@ -150,4 +160,8 @@ class PomoRecords(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"Pomo record: {self.user}:{self.id}"
+        formatted_date = self.date.strftime("%d.%m.%Y - %H:%M:%S")
+        return f"Pomo record: {self.user} : {formatted_date}"
+
+    class Meta:
+        verbose_name_plural = "Pomodoro records"
