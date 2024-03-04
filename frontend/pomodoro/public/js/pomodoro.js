@@ -507,12 +507,9 @@ document.addEventListener('DOMContentLoaded', function () {
   navBar.logoutLink.addEventListener('click', async function () {
     logoutOrCloseFlag = true
     // Transmit the Pomodoro record to the backend server.
-    // If the "Logout" link is clicked during running time,
-    if ((t.timer_control.breaking_flag && !t.timer_control.stop_flag && !t.timer_control.pause_flag)) {
-      console.log('Simulate Stop button clicking when the "logout" event occurs. ' + JSON.stringify(t.task_history))
-      // Send the Pomodoro record to the backend server.
-      displayElements.stop_button_tag.click()
-    }
+    console.log('Simulate Stop button clicking when the "logout" event occurs. ' + JSON.stringify(t.task_history))
+    displayElements.stop_button_tag.click()
+    
     // Log out the user on the server using the API.
     const reslult = await api.logout()
     if (reslult !== -1) {
