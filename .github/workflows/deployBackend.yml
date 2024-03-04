@@ -65,4 +65,5 @@ jobs:
           git config --list
           
           echo 'git push'
-          git push https://github.com/la-strole/pomodoro_timer.git HEAD:host_settings
+          git push https://la-strole:${{ secrets.GITHUB_TOKEN }}@github.com/myusername/pomodoro_timer.git HEAD:host_settings
+          # git push https://github.com/la-strole/pomodoro_timer.git HEAD:host_settings
