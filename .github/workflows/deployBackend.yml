@@ -43,16 +43,16 @@ jobs:
           git submodule update --init --recursive
           
       - name: Go to host_settings folder 
-        run: cd ./host_settings
+        run: cd ./host_settings/
       
-      - name: Fetch branches from origin
-        run: git fetch --all
+      #- name: Fetch branches from origin
+      #  run: git fetch --all
 
-      - name: Create temorarily branch
-        run: git checkout -- host_settings
+      #- name: Create temorarily branch
+      #  run: git checkout -- host_settings
 
-      - name: Pull from origin host_settings bransh to temp_branch
-        run: git pull
+      #- name: Pull from origin host_settings bransh to temp_branch
+      #  run: git pull
         
       - name: Modify host_settings/run_backend_docker_container.sh
         run: |
