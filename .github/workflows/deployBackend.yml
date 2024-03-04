@@ -1,4 +1,4 @@
-name: Deploy backend
+hname: Deploy backend
 
 #on:
 #  push:
@@ -55,9 +55,15 @@ jobs:
           git branch -a
 
           sed -i "s/pomodoro_backend:\([0-9]\+\.[0-9]\+\.[0-9]\+\)/pomodoro_backend:1.0.${{ github.run_number }}/" scripts/run_backend_docker_container.sh
-          
+
+          echo 'git add'
           git add scripts/run_backend_docker_container.sh
+          ech 'git commit'
           git commit -m "modify host_settings files"
+
+          echo 'git config'
+          git config --list
           
+          echo 'git push'
           git push 
 
