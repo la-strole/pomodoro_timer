@@ -1,4 +1,0 @@
-[submodule "host_settings"]
-	path = host_settings
-	url = ../pomodoro_timer
-	branch = host_settings
