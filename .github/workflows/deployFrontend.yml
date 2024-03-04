@@ -1,11 +1,14 @@
 name: Deploy frontend
 
+# on:
+#  push:
+#    branches:
+#      - main
+#    paths: 
+#      - 'frontend/**'
+
 on:
-  push:
-    branches:
-      - main
-    paths: 
-      - 'frontend/**'
+  workflow_dispatch
 
 jobs:
 
@@ -15,51 +18,51 @@ jobs:
     
     steps:
     
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+#      -
+#        name: Set up QEMU
+#        uses: docker/setup-qemu-action@v3
       
       - 
         uses: actions/checkout@v3
       
       - 
-        name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
+#        name: Use Node.js
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: '18.x'
 
-      - 
-        name: Install pre-production dependencies
-        run: npm install --omit=dev
-        working-directory: ./frontend
+#      - 
+#        name: Install pre-production dependencies
+#        run: npm install --omit=dev
+#        working-directory: ./frontend
       
       - name: Initialize and update submodule
         run: |
           git submodule update --init --recursive
           
-      - 
-        name: Build (minification)
-        run: make build
-        working-directory: ./frontend
+#      - 
+#        name: Build (minification)
+#        run: make build
+#        working-directory: ./frontend
 
-      - 
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+ #     - 
+ #       name: Set up Docker Buildx
+ #       uses: docker/setup-buildx-action@v3
 
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+ #     -
+ #       name: Login to Docker Hub
+ #       uses: docker/login-action@v3
+ #       with:
+ #         username: ${{ secrets.DOCKERHUB_USERNAME }}
+ #         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      -
-        name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          context: ./frontend
-          tags: eugeneparkhom/pomodoro_frontend:1.0.${{ github.run_number }}
+ #     -
+ #       name: Build and push
+ #       uses: docker/build-push-action@v5
+ #       with:
+ #         push: true
+ #         context: ./frontend
+ #         tags: eugeneparkhom/pomodoro_frontend:1.0.${{ github.run_number }}
 
       - name: Go to host_settings folder and Modify host_settings/run_frontend_docker_container.sh
         run: |
@@ -67,9 +70,6 @@ jobs:
           echo 'config git email and username'
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-
-          echo 'Update submodule'
-          git submodule update --init --recursive
           
           echo 'cd to submodule folder'
           cd host_settings/
@@ -78,7 +78,7 @@ jobs:
           git checkout host_settings
           
           echo 'Change version number'
-          sed -i "s/pomodoro_backend:\([0-9]\+\.[0-9]\+\.[0-9]\+\)/pomodoro_frontend:1.0.${{ github.run_number }}/" scripts/run_frontend_docker_container.sh
+          sed -i "s/pomodoro_frontend:\([0-9]\+\.[0-9]\+\.[0-9]\+\)/pomodoro_frontend:1.0.${{ github.run_number }}/" scripts/run_frontend_docker_container.sh
 
           echo 'git add'
           git add scripts/run_frontend_docker_container.sh
