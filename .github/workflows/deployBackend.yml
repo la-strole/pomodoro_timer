@@ -40,6 +40,9 @@ jobs:
       - name: Go to host_settings folder and Modify host_settings/run_backend_docker_container.sh
         run: |
 
+          git config --global user.email "actions@example.com"
+          git config --global user.name "GitHub Actions"
+
           git status
           git branch -a
 
@@ -47,17 +50,14 @@ jobs:
           cd host_settings/
 
           git checkout host_settings
-
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          
-          git pull origin host_settings
           
           git status
           git branch -a
 
           sed -i "s/pomodoro_backend:\([0-9]\+\.[0-9]\+\.[0-9]\+\)/pomodoro_backend:1.0.${{ github.run_number }}/" scripts/run_backend_docker_container.sh
+          
           git add scripts/run_backend_docker_container.sh
           git commit -m "modify host_settings files"
-          git push origin HEAD:host_settings
+          
+          git push 
 
