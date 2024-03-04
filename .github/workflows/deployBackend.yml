@@ -58,7 +58,7 @@ jobs:
 
           echo 'git add'
           git add scripts/run_backend_docker_container.sh
-          ech 'git commit'
+          echo 'git commit'
           git commit -m "modify host_settings files"
 
           echo 'git config'
