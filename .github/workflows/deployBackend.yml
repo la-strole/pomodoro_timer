@@ -1,4 +1,4 @@
-hname: Deploy backend
+name: Deploy backend
 
 #on:
 #  push:
