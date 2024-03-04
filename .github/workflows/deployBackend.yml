@@ -44,7 +44,10 @@ jobs:
           
       - name: Go to host_settings folder 
         run: cd ./host_settings/
-      
+      - name: Check git status
+        run: git status
+      - name: Check folders
+        run: ls -a
       #- name: Fetch branches from origin
       #  run: git fetch --all
 
