@@ -509,7 +509,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Transmit the Pomodoro record to the backend server.
     console.log('Simulate Stop button clicking when the "logout" event occurs. ' + JSON.stringify(t.task_history))
     displayElements.stop_button_tag.click()
-    
     // Log out the user on the server using the API.
     const reslult = await api.logout()
     if (reslult !== -1) {
