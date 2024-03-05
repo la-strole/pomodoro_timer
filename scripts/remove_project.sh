@@ -3,10 +3,30 @@
 # Remove the images
 sudo docker container stop pomodoro_frontend
 sudo docker container stop pomodoro_backend
+sudo docker container stop pomodoro_tlgbot
 sleep 5
-sudo docker rmi eugeneparkhom/pomodoro_frontend:1.0.0
-sudo docker rmi eugeneparkhom/pomodoro_backend:1.0.0
-sudo docker rmi eugeneparkhom/pomodoro_tlgbot:1.0.1
+
+# Function to delete Docker image by name
+delete_image_by_name() {
+    local image_name=$1
+    local image_ids=$(docker images -q $image_name)
+
+    if [ -z "$image_ids" ]; then
+        echo "No image found with the name '$image_name'."
+    else
+        echo "Deleting image(s) with name '$image_name'..."
+        docker rmi $image_ids
+        echo "Image(s) with name '$image_name' deleted successfully."
+    fi
+}
+
+# Names of Docker images you want to delete
+images=("pomodoro_frontend" "pomodoro_backend" "pomodoro_tlgbot")
+
+# Loop through the array of image names and delete them
+for image_name in "${images[@]}"; do
+    delete_image_by_name $image_name
+done
 
 sudo rm /etc/rsyslog.d/30-docker.conf
 sudo systemctl restart rsyslog
