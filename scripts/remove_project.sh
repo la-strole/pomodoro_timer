@@ -21,7 +21,7 @@ delete_image_by_name() {
 }
 
 # Names of Docker images you want to delete
-images=("eugeneparkhom/pomodoro_backend" "eugeneparkhom/pomodoro_backend" "eugeneparkhom/pomodoro_tlgbot")
+images=("eugeneparkhom/pomodoro_backend" "eugeneparkhom/pomodoro_frontend" "eugeneparkhom/pomodoro_tlgbot")
 
 # Loop through the array of image names and delete them
 for image_name in "${images[@]}"; do
