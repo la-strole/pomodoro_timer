@@ -6,6 +6,7 @@ sudo docker container stop pomodoro_backend
 sleep 5
 sudo docker rmi eugeneparkhom/pomodoro_frontend:1.0.0
 sudo docker rmi eugeneparkhom/pomodoro_backend:1.0.0
+sudo docker rmi eugeneparkhom/pomodoro_tlgbot:1.0.1
 
 sudo rm /etc/rsyslog.d/30-docker.conf
 sudo systemctl restart rsyslog
