@@ -9,7 +9,7 @@ on:
 
 jobs:
 
-  DeploymentBackend:
+  DeploymentTlgbot:
 
     runs-on: ubuntu-latest
     
