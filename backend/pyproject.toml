@@ -16,7 +16,7 @@ pydantic = "^2.6.1"
 optional=true
 
 [tool.poetry.group.deploy.dependencies]
-gunicorn = "^21.2.0"
+gunicorn = "^22.0.0"
 
 [build-system]
 requires = ["poetry-core"]
