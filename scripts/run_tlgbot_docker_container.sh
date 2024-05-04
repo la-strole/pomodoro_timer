@@ -8,4 +8,4 @@ sudo docker run \
 --log-driver syslog \
 --log-opt tag=docker/{{.ImageName}} \
 --log-opt syslog-address=unixgram:///dev/log \
-eugeneparkhom/pomodoro_tlgbot:1.0.1
+eugeneparkhom/pomodoro_tlgbot:1.0.2
