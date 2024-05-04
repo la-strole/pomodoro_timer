@@ -9,4 +9,4 @@ sudo docker run \
 --log-driver syslog \
 --log-opt tag=docker/{{.ImageName}} \
 --log-opt syslog-address=unixgram:///dev/log \
-eugeneparkhom/pomodoro_backend:1.0.50
+eugeneparkhom/pomodoro_backend:1.0.51
