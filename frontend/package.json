@@ -2,15 +2,15 @@
     "name": "pomodoro_timer",
     "description": "Simple, lightweight pomodoro timer (https://en.wikipedia.org/wiki/Pomodoro_Technique).",
     "devDependencies": {
-        "chai": "^4.3.7",
-        "eslint": "^8.45.0",
-        "eslint-config-standard": "^17.1.0",
-        "esm": "^3.2.25",
-        "grunt-eslint": "^24.3.0",
-        "grunt-htmlhint": "^0.9.13",
-        "http-server": "^14.1.1",
-        "mocha": "^10.2.0",
-        "selenium-webdriver": "^4.10.0"
+        "chai": ">=4.3.7",
+        "eslint": ">=8.45.0",
+        "eslint-config-standard": ">=17.1.0",
+        "esm": ">=3.2.25",
+        "grunt-eslint": ">=24.3.0",
+        "grunt-htmlhint": ">=0.9.13",
+        "http-server": ">=14.1.1",
+        "mocha": ">=10.2.0",
+        "selenium-webdriver": ">=4.10.0"
     },
     "type": "module",
     "scripts": {
@@ -22,9 +22,9 @@
     "author": "la-strole",
     "license": "MIT",
     "dependencies": {
-        "grunt": "^1.6.1",
-        "grunt-contrib-htmlmin": "^3.1.0",
-        "grunt-contrib-uglify": "^5.2.2",
-        "js-cookie": "^3.0.5"
+        "grunt": ">=1.6.1",
+        "grunt-contrib-htmlmin": ">=3.1.0",
+        "grunt-contrib-uglify": ">=5.2.2",
+        "js-cookie": ">=3.0.5"
     }
 }
